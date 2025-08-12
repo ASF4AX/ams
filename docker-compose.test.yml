@@ -1,0 +1,88 @@
+x-airflow-common: &airflow-common
+  image: apache/airflow:slim-2.10.5
+  env_file:
+    - .env
+  environment:
+    - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+    - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
+    - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=False
+  volumes:
+    - airflow_data:/opt/airflow
+    - ./dags:/opt/airflow/dags
+    - ./models:/opt/airflow/dags/models
+    - ./dags/requirements-dags.txt:/opt/airflow/requirements-dags.txt
+  networks:
+    - ams-network
+
+services:
+  # PostgreSQL 데이터베이스
+  db:
+    image: postgres:15
+    container_name: ams-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-ams}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ams-network
+
+  # Airflow 웹서버
+  airflow:
+    <<: *airflow-common
+    container_name: ams-airflow
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "
+        pip install --no-cache-dir -r /opt/airflow/requirements-dags.txt &&
+        pip install apache-airflow-providers-postgres &&
+        airflow webserver
+      "
+    restart: always
+    depends_on:
+      - scheduler
+
+  # Airflow 스케줄러
+  scheduler:
+    <<: *airflow-common
+    container_name: ams-airflow-scheduler
+    command: >
+      bash -c "
+        pip install --no-cache-dir -r /opt/airflow/requirements-dags.txt &&
+        pip install apache-airflow-providers-postgres &&
+        airflow scheduler
+      "
+    restart: always
+    depends_on:
+      - airflow-init
+
+  # Airflow 초기화
+  airflow-init:
+    <<: *airflow-common
+    container_name: ams-airflow-init
+    env_file:
+      - .env
+    command: >
+      bash -c "
+        pip install --no-cache-dir -r /opt/airflow/requirements-dags.txt &&
+        pip install apache-airflow-providers-postgres &&
+        airflow db migrate &&
+        airflow users create --username ${AIRFLOW_ADMIN_USERNAME} --firstname ${AIRFLOW_ADMIN_FIRSTNAME} --lastname ${AIRFLOW_ADMIN_LASTNAME} --role ${AIRFLOW_ADMIN_ROLE} --email ${AIRFLOW_ADMIN_EMAIL} --password ${AIRFLOW_ADMIN_PASSWORD}
+      "
+    restart: "no"
+
+networks:
+  ams-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  airflow_data:
+    driver: local
