@@ -1,0 +1,2 @@
+ccxt==4.2.86
+requests>=2.31.0 # KIS API 호출에 필요

@@ -1,0 +1,26 @@
+services:
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ams-web
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8501}:8501"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - STREAMLIT_BASE_URL_PATH=${STREAMLIT_BASE_URL_PATH:-/ams}
+    networks:
+      - postgres-network
+      - caddy_net
+
+networks:
+  postgres-network:
+    external: true
+  
+  caddy_net:
+    external: true
