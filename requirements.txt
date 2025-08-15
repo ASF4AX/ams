@@ -1,0 +1,26 @@
+# 웹 애플리케이션
+streamlit
+
+# 데이터베이스
+psycopg2-binary==2.9.9
+SQLAlchemy
+
+# 데이터 처리 및 분석
+pandas==2.1.4
+numpy==1.26.3
+
+# 시각화
+plotly==5.18.0
+
+# 환경변수 관리
+python-dotenv==1.0.1
+
+# Airflow
+apache-airflow==2.10.5
+
+# 개발 도구
+pytest==7.4.3
+black==23.12.1
+
+# DAGs 관련
+ccxt==4.2.86
