@@ -11,7 +11,10 @@ def _ensure_airflow_stub() -> None:
     """Provide a lightweight Airflow stub for module imports."""
     airflow_module = sys.modules.setdefault("airflow", ModuleType("airflow"))
     hooks_module = sys.modules.setdefault("airflow.hooks", ModuleType("airflow.hooks"))
+    models_module = sys.modules.setdefault("airflow.models", ModuleType("airflow.models"))
+
     airflow_module.hooks = hooks_module
+    airflow_module.models = models_module
 
     if "airflow.hooks.base" not in sys.modules:
         base_module = ModuleType("airflow.hooks.base")
@@ -33,6 +36,21 @@ def _ensure_airflow_stub() -> None:
         hooks_module.base = base_module
     else:  # pragma: no cover - executed when stub already present
         hooks_module.base = sys.modules["airflow.hooks.base"]
+
+    if not hasattr(models_module, "Variable"):
+
+        class _StubVariable:  # pragma: no cover - trivial container
+            _storage: dict[str, str] = {}
+
+            @classmethod
+            def get(cls, key: str, default_var: str | None = None):
+                return cls._storage.get(key, default_var)
+
+            @classmethod
+            def set(cls, key: str, value: str) -> None:
+                cls._storage[key] = value
+
+        models_module.Variable = _StubVariable
 
 
 _ensure_airflow_stub()
