@@ -56,10 +56,10 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 - [ ] 거래소/동기화 태스크
 
-  - [ ] Binance: `process_binance_balances` 스팟/선물, 평가금액 KRW, 스테이블 분류(mock 환율)
-  - [ ] Binance: `update_assets_in_db`가 `insert_asset` 호출(mock DB 세션)
-  - [ ] Bitget: `process_bitget_balances` 가격/필터링/평가금액 KRW
-  - [ ] Bithumb: `process_bithumb_balances` KRW 가격/평가금액 매핑
+  - [x] Binance: `process_binance_balances` 스팟/선물, 평가금액 KRW, 스테이블 분류(mock 환율)
+  - [x] Binance: `update_assets_in_db`가 `insert_asset` 호출(mock DB 세션)
+  - [x] Bitget: `process_bitget_balances` 가격/필터링/평가금액 KRW
+  - [x] Bithumb: `process_bithumb_balances` KRW 가격/평가금액 매핑
 
 - [ ] KIS 처리
 
