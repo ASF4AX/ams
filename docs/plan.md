@@ -4,11 +4,12 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 ## Current Goal
 
-Maintain clear documentation guidelines for agent behavior.
+Finalize the manual asset registration plan for the asset overview page.
 
 ## Task List
 
 - [x] Completed task
 - [x] Updated testing guideline for generic test runner
-- [ ] Task 2
-  - [ ] Task 2-1
+- [ ] Implement manual asset management UI
+  - [ ] Add bottom-of-page manual asset form with CRUD controls to `1_자산현황.py`
+- [x] Document manual asset registration for asset overview page
