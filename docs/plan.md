@@ -22,14 +22,14 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 - [ ] 유닛 테스트: utils
 
-  - [ ] `format_currency` KRW/USD/BTC/None/미지정 통화 포맷
-  - [ ] `format_profit_loss`, `format_profit_loss_rate` 포맷
-  - [ ] `color_negative_red` 음수/양수/0/비수치 처리
+  - [x] `format_currency` KRW/USD/BTC/None/미지정 통화 포맷
+  - [x] `format_profit_loss`, `format_profit_loss_rate` 포맷
+  - [x] `color_negative_red` 음수/양수/0/비수치 처리
 
-- [ ] DB 유틸(app/utils/db.py)
+- [x] DB 유틸(app/utils/db.py)
 
-  - [ ] `initialize_db(drop_all=False)` 테이블 생성/멱등성
-  - [ ] `test_connection()` 성공/실패(mock 실패 시나리오)
+  - [x] `initialize_db(drop_all=False)` 테이블 생성/멱등성
+  - [x] `test_connection()` 성공/실패(mock 실패 시나리오)
 
 - [ ] CRUD 테스트(app/crud/crud.py)
 
