@@ -54,19 +54,19 @@ This document tracks tasks, progress, and next steps for the project. After each
   - [x] `upsert_exchange_rate` 및 `get_exchange_rates` 딕셔너리 출력
   - [x] `get_active_stable_coins` 세트 반환
 
-- [ ] 거래소/동기화 태스크
+- [x] 거래소/동기화 태스크
 
   - [x] Binance: `process_binance_balances` 스팟/선물, 평가금액 KRW, 스테이블 분류(mock 환율)
   - [x] Binance: `update_assets_in_db`가 `insert_asset` 호출(mock DB 세션)
   - [x] Bitget: `process_bitget_balances` 가격/필터링/평가금액 KRW
   - [x] Bithumb: `process_bithumb_balances` KRW 가격/평가금액 매핑
 
-- [ ] KIS 처리
+- [x] KIS 처리
 
-  - [ ] 국내: `process_kis_assets` 수치 변환/필드 매핑
-  - [ ] 해외: `process_kis_overseas_assets` 중복제거/거래소코드/숫자 파싱
-  - [ ] 해외: `process_kis_overseas_cash` 0 금액 제외/최초 유효 항목 처리
-  - [ ] 환율: `process_kis_exchange_rates` base→KRW 양수 환율 추출
+  - [x] 국내: `process_kis_assets` 수치 변환/필드 매핑
+  - [x] 해외: `process_kis_overseas_assets` 중복제거/거래소코드/숫자 파싱
+  - [x] 해외: `process_kis_overseas_cash` 0 금액 제외/최초 유효 항목 처리
+  - [x] 환율: `process_kis_exchange_rates` base→KRW 양수 환율 추출
 
 - [ ] 데일리 메트릭(dags/tasks/daily_asset_metrics.py)
 
