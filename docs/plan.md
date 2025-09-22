@@ -47,12 +47,12 @@ This document tracks tasks, progress, and next steps for the project. After each
   - [x] StableCoin: 생성/조회/활성화 업데이트/삭제/활성 목록
   - [x] CashRates: `get_latest_cash_equivalent_annual_interest_info` 365배 계산
 
-- [ ] DAG 유틸(dags/utils/db.py)
+- [x] DAG 유틸(dags/utils/db.py)
 
-  - [ ] `insert_asset` 필수필드 검증/플랫폼 자동 생성/삽입
-  - [ ] `get_latest_revision`/`get_latest_asset_revision_by_platform_id`
-  - [ ] `upsert_exchange_rate` 및 `get_exchange_rates` 딕셔너리 출력
-  - [ ] `get_active_stable_coins` 세트 반환
+  - [x] `insert_asset` 필수필드 검증/플랫폼 자동 생성/삽입
+  - [x] `get_latest_revision`/`get_latest_asset_revision_by_platform_id`
+  - [x] `upsert_exchange_rate` 및 `get_exchange_rates` 딕셔너리 출력
+  - [x] `get_active_stable_coins` 세트 반환
 
 - [ ] 거래소/동기화 태스크
 
