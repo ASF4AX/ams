@@ -31,21 +31,21 @@ This document tracks tasks, progress, and next steps for the project. After each
   - [x] `initialize_db(drop_all=False)` 테이블 생성/멱등성
   - [x] `test_connection()` 성공/실패(mock 실패 시나리오)
 
-- [ ] CRUD 테스트(app/crud/crud.py)
+- [x] CRUD 테스트(app/crud/crud.py)
 
-  - [ ] Platform: `create_platform`, `get_platform_by_name`
-  - [ ] Asset: `create_asset` 평가금액/리비전, 최신 리비전 서브쿼리 동작
-  - [ ] Asset: `get_all_assets`가 플랫폼별 최신 리비전만 반환
-  - [ ] Asset: `update_asset` 시 `evaluation_amount` 재계산
-  - [ ] Transaction: `create_transaction` 매수/매도 후 수량 반영
-  - [ ] Transaction: `get_all_transactions` 정렬/limit/offset
-  - [ ] Transaction: `get_recent_transactions(days)` 필터링
-  - [ ] Summary: `get_total_asset_value` 최신 `eval_amount_krw` 합산
-  - [ ] Summary: `get_daily_change_percentage`(플랫폼별 2개 리비전)
-  - [ ] Summary: `get_asset_distribution_by_category` 합산/0 제외
-  - [ ] Summary: `get_asset_distribution_by_platform` 합산
-  - [ ] StableCoin: 생성/조회/활성화 업데이트/삭제/활성 목록
-  - [ ] CashRates: `get_latest_cash_equivalent_annual_interest_info` 365배 계산
+  - [x] Platform: `create_platform`, `get_platform_by_name`
+  - [x] Asset: `create_asset` 평가금액/리비전, 최신 리비전 서브쿼리 동작
+  - [x] Asset: `get_all_assets`가 플랫폼별 최신 리비전만 반환
+  - [x] Asset: `update_asset` 시 `evaluation_amount` 재계산
+  - [x] Transaction: `create_transaction` 매수/매도 후 수량 반영
+  - [x] Transaction: `get_all_transactions` 정렬/limit/offset
+  - [x] Transaction: `get_recent_transactions(days)` 필터링
+  - [x] Summary: `get_total_asset_value` 최신 `eval_amount_krw` 합산
+  - [x] Summary: `get_daily_change_percentage`(플랫폼별 2개 리비전)
+  - [x] Summary: `get_asset_distribution_by_category` 합산/0 제외
+  - [x] Summary: `get_asset_distribution_by_platform` 합산
+  - [x] StableCoin: 생성/조회/활성화 업데이트/삭제/활성 목록
+  - [x] CashRates: `get_latest_cash_equivalent_annual_interest_info` 365배 계산
 
 - [ ] DAG 유틸(dags/utils/db.py)
 
