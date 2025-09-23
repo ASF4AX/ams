@@ -73,6 +73,6 @@ This document tracks tasks, progress, and next steps for the project. After each
   - [x] `_fetch_previous_metrics` 이전값 조회/신규 리비전 증가
   - [x] `process_metrics` 스테이블/일반 after_value 계산 및 저장
 
-- [ ] DAG 스모크 테스트
-  - [ ] 각 DAG 파일 임포트 가능 여부
-  - [ ] 태스크 ID 존재 확인 및 기본 스케줄 값 확인
+- [x] DAG 스모크 테스트
+  - [x] 각 DAG 파일 임포트 가능 여부
+  - [x] 태스크 ID 존재 확인 및 기본 스케줄 값 확인
