@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 
 import pytest
-from sqlalchemy import engine as sqlalchemy_engine
-from sqlalchemy.orm import sessionmaker
 
 from app.crud import crud
 from models.models import (
@@ -12,21 +10,6 @@ from models.models import (
     Transaction,
     Base,
 )
-
-
-@pytest.fixture()
-def db_session():
-    engine = sqlalchemy_engine.create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    try:
-        yield session
-    finally:
-        session.close()
-        Base.metadata.drop_all(engine)
-        engine.dispose()
-
 
 def _create_platform(session, name="Binance", category="거래소"):
     return crud.create_platform(session, name=name, category=category)
