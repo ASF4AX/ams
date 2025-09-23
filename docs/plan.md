@@ -68,10 +68,10 @@ This document tracks tasks, progress, and next steps for the project. After each
   - [x] 해외: `process_kis_overseas_cash` 0 금액 제외/최초 유효 항목 처리
   - [x] 환율: `process_kis_exchange_rates` base→KRW 양수 환율 추출
 
-- [ ] 데일리 메트릭(dags/tasks/daily_asset_metrics.py)
+- [x] 데일리 메트릭(dags/tasks/daily_asset_metrics.py)
 
-  - [ ] `_fetch_previous_metrics` 이전값 조회/신규 리비전 증가
-  - [ ] `process_metrics` 스테이블/일반 after_value 계산 및 저장
+  - [x] `_fetch_previous_metrics` 이전값 조회/신규 리비전 증가
+  - [x] `process_metrics` 스테이블/일반 after_value 계산 및 저장
 
 - [ ] DAG 스모크 테스트
   - [ ] 각 DAG 파일 임포트 가능 여부
