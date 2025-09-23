@@ -10,11 +10,9 @@ from __future__ import annotations
 import importlib
 import sys
 from types import ModuleType, SimpleNamespace
-from typing import Generator
 
 import pytest
-from sqlalchemy.engine import create_engine as sqla_create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from models import models
 
@@ -50,23 +48,6 @@ def _ensure_airflow_stub() -> None:
 
 _ensure_airflow_stub()
 db = importlib.import_module("dags.utils.db")
-
-
-@pytest.fixture()
-def db_session() -> Generator[Session, None, None]:
-    engine = sqla_create_engine("sqlite:///:memory:")
-    models.Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    try:
-        yield session
-        session.commit()
-    finally:
-        session.close()
-        models.Base.metadata.drop_all(engine)
-        engine.dispose()
-
-
 def test_insert_asset_creates_platform_and_asset(db_session: Session) -> None:
     asset_data = {
         "symbol": "BTC",
@@ -161,14 +142,12 @@ def test_upsert_exchange_rate_and_lookup(db_session: Session) -> None:
     assert rates["USD"] == pytest.approx(1300.0)
 
 
-def test_get_active_stable_coins(db_session: Session) -> None:
-    db_session.add_all(
-        [
-            models.StableCoin(symbol="USDT", is_active=True),
-            models.StableCoin(symbol="USDC", is_active=True),
-            models.StableCoin(symbol="DAI", is_active=False),
-        ]
-    )
+def test_get_active_stable_coins(
+    db_session: Session, sample_data_factory
+) -> None:
+    sample_data_factory.stable_coin(symbol="USDT", is_active=True)
+    sample_data_factory.stable_coin(symbol="USDC", is_active=True)
+    sample_data_factory.stable_coin(symbol="DAI", is_active=False)
     db_session.commit()
 
     active = db.get_active_stable_coins(db_session)

@@ -13,12 +13,12 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] Add environment samples (`.env.sample`, `.env.sample.test`)
 - [x] Implement core Streamlit pages (dashboard, assets, rates, transactions)
 
-- [ ] 테스트 환경 준비
+- [x] 테스트 환경 준비
 
-  - [ ] pytest 기본 설정 및 실행 옵션 구성(`pytest -vv`)
-  - [ ] SQLAlchemy 테스트 픽스처(엔진/세션, PostgreSQL 연결)
-  - [ ] 샘플 데이터 팩토리 작성(경량 팩토리 우선); `app/utils/seed_data.py`는 현 구조와 합치성 검토 후 필요 시 수정 또는 미사용
-  - [ ] 외부 의존성 mock 픽스처(ccxt, requests, Airflow BaseHook/Variable)
+  - [x] pytest 기본 설정 및 실행 옵션 구성(`pytest -vv`)
+  - [x] SQLAlchemy 테스트 픽스처(엔진/세션, PostgreSQL 연결)
+  - [x] 샘플 데이터 팩토리 작성(경량 팩토리 우선); `app/utils/seed_data.py`는 현 구조와 합치성 검토 후 필요 시 수정 또는 미사용
+  - [x] 외부 의존성 mock 픽스처(ccxt, requests, Airflow BaseHook/Variable)
 
 - [ ] 유닛 테스트: utils
 

@@ -5,27 +5,10 @@ from __future__ import annotations
 from contextlib import contextmanager
 
 import pytest
-from sqlalchemy.engine import create_engine as sqla_create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from dags.tasks import daily_asset_metrics
 from models import models
-
-
-@pytest.fixture()
-def db_session() -> Session:
-    """Provide an isolated in-memory database session for each test."""
-    engine = sqla_create_engine("sqlite:///:memory:")
-    models.Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    try:
-        yield session
-        session.commit()
-    finally:
-        session.close()
-        models.Base.metadata.drop_all(engine)
-        engine.dispose()
 
 
 def test_fetch_previous_metrics_returns_lookup_and_revision(db_session: Session) -> None:
