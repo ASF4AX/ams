@@ -22,3 +22,5 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] KIS 처리 (국내·해외 자산/현금 파싱 및 환율 추출)
 - [x] 데일리 메트릭(dags/tasks/daily_asset_metrics.py) (이전값 조회와 변화량 계산)
 - [x] DAG 스모크 테스트 (DAG 임포트 및 태스크/스케줄 검증)
+
+- [x] SQLAlchemy SAWarning 정리: IN 절 우변을 Subquery에서 Select로 명시화하여 경고 제거 (`app/crud/crud.py`)
