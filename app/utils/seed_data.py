@@ -124,6 +124,7 @@ def seed_database():
                 current_price=asset_data["current_price"],
                 quantity=asset_data["quantity"],
                 evaluation_amount=asset_data["current_price"] * asset_data["quantity"],
+                revision=1,
             )
             db.add(asset)
             db.flush()  # ID 할당을 위해 flush
