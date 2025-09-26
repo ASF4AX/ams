@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from sqlalchemy.sql import Subquery, select
+from sqlalchemy.sql import select
 from datetime import datetime, timedelta
 
 from models.models import (
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # --- Helper Functions --- START ---
 
 
-def _get_latest_assets_by_platform_revision(db: Session) -> Subquery:
+def _get_latest_assets_by_platform_revision(db: Session):
     """플랫폼 별로 최신 revision에 존재하는 자산 목록을 반환하는 서브쿼리"""
 
     # 1. platform_id별 최신 revision 번호 구하기
@@ -40,8 +40,8 @@ def _get_latest_assets_by_platform_revision(db: Session) -> Subquery:
         )
         .subquery("latest_asset_ids")  # 서브쿼리에 별칭 추가
     )
-
-    return latest_asset_ids_subquery
+    # IN 절에는 단일 컬럼을 반환하는 Select가 필요하므로 명시적으로 Select를 반환
+    return select(latest_asset_ids_subquery.c.id)
 
 
 def _get_latest_metric_revision_per_platform(db: Session) -> dict[int, int]:

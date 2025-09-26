@@ -96,6 +96,15 @@ streamlit run app/app.py
 python app/utils/seed_data.py
 ```
 
+## 테스트
+
+의존성 설치 후 아래 명령으로 테스트를 실행합니다. `pytest.ini`에 `-vv`가 설정되어 있어 실행된 테스트 이름이 모두 출력됩니다.
+
+```
+pytest            # 전체 테스트 실행 (verbose)
+```
+
+
 ## Docker로 스트림릿만 실행 (고급)
 
 `docker-compose.yml`은 외부 네트워크(`postgres-network`, `caddy_net`)와 외부 DB를 전제로 합니다. 사내/개인 인프라에서 역프록시 및 DB가 이미 구성된 환경에 적합합니다.
