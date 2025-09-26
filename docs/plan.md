@@ -24,3 +24,8 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] DAG 스모크 테스트 (DAG 임포트 및 태스크/스케줄 검증)
 
 - [x] SQLAlchemy SAWarning 정리: IN 절 우변을 Subquery에서 Select로 명시화하여 경고 제거 (`app/crud/crud.py`)
+- [x] 보유 자산 현황 상단에 자산별 보유 비율 원형차트 추가 (`app/pages/1_자산현황.py`)
+- [x] 자산별 원형차트 라벨/집계 기준을 심볼→이름으로 변경 (`app/pages/1_자산현황.py`)
+- [x] 자산별 원형차트 위치를 "총 평가금액" 바로 아래로 이동, 소제목 제거 (`app/pages/1_자산현황.py`)
+- [x] 자산 분포 원형차트 컴포넌트화 (`app/components/asset_pie.py`) 및 페이지 적용
+ - [x] 컴포넌트 유닛 테스트: 자산 분포 원형차트 (`tests/app/components/test_asset_pie.py`)
