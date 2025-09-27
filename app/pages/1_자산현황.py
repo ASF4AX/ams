@@ -8,7 +8,10 @@ from utils.formatters import (
     color_negative_red,
 )
 from crud.crud import get_all_assets, get_all_platforms
-from components.asset_pie import render_asset_allocation_pie_by_name
+from components.asset_pie import (
+    render_asset_allocation_pie_by_name,
+    render_asset_allocation_pie_by_category,
+)
 from models.models import Platform
 
 # 상수 정의
@@ -89,8 +92,12 @@ try:
         total_asset_value = df_assets["원화평가금액_숫자"].sum()
         st.metric("총 평가금액", f"₩{total_asset_value:,.0f}")
 
-        # 자산(이름) 기준 전체 보유 비율 원형 차트 (컴포넌트)
-        render_asset_allocation_pie_by_name(assets)
+        # 상단 원형 차트 2열 배치: 좌(카테고리별), 우(자산별)
+        pie_left, pie_right = st.columns(2)
+        with pie_left:
+            render_asset_allocation_pie_by_category(assets)
+        with pie_right:
+            render_asset_allocation_pie_by_name(assets)
         st.markdown("---")
 
         # 플랫폼별 그룹핑 (필터링된 데이터프레임 사용)
@@ -109,14 +116,14 @@ try:
                 display_df = group.drop(columns=["원화평가금액_숫자"]).copy()
 
                 # 손익과 손익률에 색상 적용
-                styled_df = display_df.style.applymap(
+                styled_df = display_df.style.map(
                     color_negative_red, subset=["평가손익", "평가손익률"]
                 )
 
                 # 데이터프레임 표시
                 st.dataframe(
                     styled_df,
-                    use_container_width=True,
+                    width='stretch',
                     hide_index=True,
                     column_order=(
                         "거래소",

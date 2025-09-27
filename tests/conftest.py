@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import sys
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 from types import ModuleType
 from typing import Iterator
@@ -191,6 +192,7 @@ class SampleDataFactory:
         after_value_krw: float = 0.0,
         before_value: float | None = None,
         before_value_krw: float | None = None,
+        created_at: datetime | None = None,
     ) -> DailyAssetMetrics:
         metric = DailyAssetMetrics(
             platform_id=platform.id,
@@ -201,6 +203,7 @@ class SampleDataFactory:
             after_value_krw=after_value_krw,
             before_value=before_value,
             before_value_krw=before_value_krw,
+            created_at=created_at or datetime.now(),
         )
         self._session.add(metric)
         self._session.flush()

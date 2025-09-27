@@ -69,14 +69,12 @@ def initialize_db(drop_all=True):
             Base.metadata.drop_all(bind=engine)
             logger.info("기존 테이블이 삭제되었습니다.")
 
-        # 테이블 생성
-        logger.info("데이터베이스 테이블을 생성합니다...")
         Base.metadata.create_all(bind=engine)
-        logger.info("데이터베이스 테이블이 생성되었습니다.")
+        logger.info("스키마 동기화 완료.")
 
         # 테이블 목록 출력
         tables = inspect(engine).get_table_names()
-        logger.info(f"생성된 테이블 목록: {', '.join(tables)}")
+        logger.info(f"현재 테이블 목록: {', '.join(tables)}")
 
     except Exception as e:
         logger.error(f"데이터베이스 초기화 실패: {e}")

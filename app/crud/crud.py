@@ -372,8 +372,12 @@ def get_portfolio_timeseries(db: Session, days: int = 30) -> list[dict]:
     if days <= 0:
         return []
 
-    cutoff = datetime.now() - timedelta(days=days)
+    # 캘린더 일자 기준 컷오프(오늘로부터 N일 전의 '날짜')
+    anchor = datetime.now()
+    cutoff_date = (anchor - timedelta(days=days)).date()
     day_expr = func.date(DailyAssetMetrics.created_at)
+
+    # 참고: 집계 기준은 '캘린더 일자'입니다. day_expr >= cutoff_date로 윈도우를 제한합니다.
 
     latest_revision_per_day = (
         db.query(
@@ -381,11 +385,14 @@ def get_portfolio_timeseries(db: Session, days: int = 30) -> list[dict]:
             day_expr.label("day"),
             func.max(DailyAssetMetrics.revision).label("latest_revision"),
         )
-        .filter(DailyAssetMetrics.created_at >= cutoff)
+        .filter(day_expr >= cutoff_date)
         .group_by(DailyAssetMetrics.platform_id, day_expr)
         .subquery()
     )
 
+    # 날짜(day) 일치 조건은 현재 리비전 정책(플랫폼별 전역 증가)하에서는
+    # 기능상 중복이지만, '해당 일자의 최신 리비전'이라는 의도를 명확히 하고
+    # 향후 리비전 정책 변경/백필 등에도 안전하도록 유지합니다.
     query = (
         db.query(
             latest_revision_per_day.c.day.label("day"),
@@ -397,7 +404,6 @@ def get_portfolio_timeseries(db: Session, days: int = 30) -> list[dict]:
             & (func.date(DailyAssetMetrics.created_at) == latest_revision_per_day.c.day)
             & (DailyAssetMetrics.revision == latest_revision_per_day.c.latest_revision),
         )
-        .filter(DailyAssetMetrics.created_at >= cutoff)
         .filter(DailyAssetMetrics.after_value_krw.isnot(None))
         .group_by(latest_revision_per_day.c.day)
         .order_by(latest_revision_per_day.c.day)

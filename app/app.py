@@ -3,7 +3,6 @@ import sys
 import logging
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -15,11 +14,11 @@ load_dotenv()
 from utils.db import get_db_session, initialize_db
 from crud.crud import (
     get_total_asset_value,
-    get_asset_distribution_by_category,
     get_recent_transactions,
     get_daily_change_percentage,
-    get_portfolio_timeseries,
 )
+from crud.metrics import get_portfolio_period_return
+from components.asset_trend import render_portfolio_timeseries
 
 # 데이터베이스 테이블 생성
 initialize_db(drop_all=False)
@@ -46,9 +45,6 @@ try:
     # 데이터베이스에서 데이터 가져오기
     total_value = get_total_asset_value(db)
 
-    # 자산 분포 (기존 Asset 기반 - KRW 사용하도록 수정됨)
-    category_data = get_asset_distribution_by_category(db)
-
     # --- 데이터 가져오기 (DailyAssetMetrics 기반) ---
     daily_change = get_daily_change_percentage(db)
 
@@ -69,73 +65,44 @@ try:
         )
     recent_transactions = pd.DataFrame(transactions_data)
 
+    # 조회 기간 선택 (차트 외부)
+    selected_days = st.selectbox(
+        "조회 기간",
+        options=[30, 90, 180],
+        index=1,
+        format_func=lambda value: f"{value}일",
+        key="portfolio_period",
+    )
+
+    # 기간별 수익률 계산 (집계 엔드포인트만 조회)
+    monthly_return = get_portfolio_period_return(db, days=30)
+    period_return = get_portfolio_period_return(db, days=int(selected_days))
+
     # --- 대시보드 UI 부분 (데이터 표시 로직 업데이트) ---
     col1, col2, col3 = st.columns(3)
     with col1:
         # 총 자산 메트릭: daily_change 값을 delta로 사용
         st.metric("총 자산", f"₩{total_value:,.0f}", f"{daily_change:.1f}%")
     with col2:
-        # 일일 수익률 메트릭: delta 없음
-        st.metric("일일 수익률", f"{daily_change:.1f}%")
-    with col3:
-        # 30일 수익률 메트릭: delta 없음
-        st.metric("30일 수익률", "N/A")
-
-    # 차트를 2열로 배치
-    col_left, col_right = st.columns(2)
-
-    with col_left:
-        st.subheader("자산 분포")
-        if not category_data:
-            st.info("자산 분포 데이터가 없습니다.")
-        else:
-            # category_data 구조: [{'category': '...', 'amount': ...}]
-            df_category = pd.DataFrame(category_data)
-            fig_pie = px.pie(
-                df_category,
-                values="amount",  # amount는 KRW 기준 총액
-                names="category",
-                title="카테고리별 자산 비율 (KRW 기준)",
-                color_discrete_sequence=px.colors.qualitative.Pastel,
-            )
-            fig_pie.update_traces(textposition="inside", textinfo="percent+label")
-            st.plotly_chart(fig_pie, use_container_width=True)
-
-    with col_right:
-        st.subheader("자산 추이")
-        selected_days = st.selectbox(
-            "조회 기간",
-            options=[7, 30, 90, 180],
-            index=1,
-            format_func=lambda value: f"{value}일",
+        # 월 수익률 (30일 기준)
+        st.metric(
+            "월 수익률",
+            f"{monthly_return:.1f}%" if monthly_return is not None else "N/A",
         )
-        timeseries = get_portfolio_timeseries(db, days=int(selected_days))
-        if not timeseries:
-            st.info("자산 추이 데이터가 없습니다.")
-        else:
-            df_series = pd.DataFrame(timeseries)
-            df_series["date"] = pd.to_datetime(df_series["date"])
-            df_series = df_series.sort_values("date")
-            df_series = df_series.set_index("date")
-            full_range = pd.date_range(
-                start=df_series.index.min(),
-                end=df_series.index.max(),
-                freq="D",
-            )
-            df_series = df_series.reindex(full_range).ffill()
-            df_series = df_series.reset_index().rename(
-                columns={"index": "날짜", "total_krw": "자산가치"}
-            )
-            fig_line = px.line(
-                df_series,
-                x="날짜",
-                y="자산가치",
-                title=f"최근 {int(selected_days)}일 자산 가치 추이 (KRW)",
-                labels={"자산가치": "총 자산 가치 (KRW)", "날짜": "날짜"},
-            )
-            # y축 형식을 원화로 설정하고 차트 폭을 레이아웃에 맞춤
-            fig_line.update_layout(yaxis_tickformat="₩,")
-            st.plotly_chart(fig_line, width="stretch")
+    with col3:
+        # 선택 기간 수익률 (조회기간 연동)
+        st.metric(
+            f"{int(selected_days)}일 수익률",
+            f"{period_return:.1f}%" if period_return is not None else "N/A",
+        )
+
+    # 자산 추이 (상단, 전체 폭) 컴포넌트
+    # 오늘 포인트를 현재 총자산 값으로 반영해 표시
+    render_portfolio_timeseries(
+        db, days=int(selected_days), use_current_value_today=True
+    )
+
+    # 메인 페이지에서는 '자산 분포' 섹션을 제거했습니다.
 
     st.subheader("최근 거래 내역")
     if recent_transactions.empty:
@@ -143,7 +110,7 @@ try:
     else:
         st.dataframe(
             recent_transactions,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             # 거래 금액(tx.amount)의 통화가 KRW가 아닐 수 있음에 유의
             column_config={
