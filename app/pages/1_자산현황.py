@@ -23,7 +23,8 @@ st.header("보유 자산 현황")
 with st.sidebar:
     # 세션 상태 초기화
     if "hide_small_assets" not in st.session_state:
-        st.session_state["hide_small_assets"] = False
+        # 기본값을 True로 설정하여 소액 자산을 기본적으로 숨김
+        st.session_state["hide_small_assets"] = True
 
     # 소액 자산 숨김 옵션
     hide_small_assets = st.checkbox(
