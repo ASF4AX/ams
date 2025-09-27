@@ -68,7 +68,8 @@ def _capture_st_on_module(monkeypatch, asset_pie_module) -> Tuple[List[str], Lis
     def fake_info(msg: str):
         infos.append(str(msg))
 
-    def fake_plotly_chart(fig, use_container_width: bool = False):
+    def fake_plotly_chart(fig, **kwargs):
+        # Accept both legacy(use_container_width) and new(width) kwargs
         charts.append(fig)
 
     # Patch the exact module-level 'st' used by the component

@@ -98,7 +98,7 @@ try:
                 color_discrete_sequence=px.colors.qualitative.Pastel,
             )
             fig_pie.update_traces(textposition="inside", textinfo="percent+label")
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, width='stretch')
 
     with col_right:
         st.subheader("자산 추이")
@@ -117,7 +117,7 @@ try:
             fig_line.update_layout(
                 yaxis_tickformat="₩,"
             )  # 정수형이 아닐 수 있으므로 ',' 사용
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, width='stretch')
 
     st.subheader("최근 거래 내역")
     if recent_transactions.empty:
@@ -125,7 +125,7 @@ try:
     else:
         st.dataframe(
             recent_transactions,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             # 거래 금액(tx.amount)의 통화가 KRW가 아닐 수 있음에 유의
             column_config={

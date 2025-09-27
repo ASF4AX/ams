@@ -71,7 +71,7 @@ try:
 
         st.dataframe(
             filtered_df,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             column_config={  # 컬럼별 상세 설정
                 "날짜": st.column_config.DatetimeColumn(format="YYYY-MM-DD HH:mm"),

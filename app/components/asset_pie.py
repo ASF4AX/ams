@@ -55,5 +55,4 @@ def render_asset_allocation_pie_by_name(
         color_discrete_sequence=px.colors.qualitative.Pastel,
     )
     fig.update_traces(textposition="inside", textinfo="percent+label")
-    st.plotly_chart(fig, use_container_width=True)
-
+    st.plotly_chart(fig, width='stretch')

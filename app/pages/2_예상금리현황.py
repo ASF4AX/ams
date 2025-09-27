@@ -41,7 +41,7 @@ try:
 
         st.dataframe(
             df_interest,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             column_order=(
                 "플랫폼",
