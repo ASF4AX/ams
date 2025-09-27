@@ -328,6 +328,100 @@ def test_get_asset_distribution_by_platform(db_session):
     ]
 
 
+def test_get_portfolio_timeseries_returns_latest_daily_totals(db_session):
+    now = datetime.now()
+    day1 = (now - timedelta(days=2)).replace(hour=9, minute=0, second=0, microsecond=0)
+    day2 = (now - timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+
+    platform1 = _create_platform(db_session, name="Upbit")
+    platform2 = _create_platform(db_session, name="Binance", category="거래소")
+
+    metrics = [
+        # Day1 - earlier revision (should be ignored)
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="BTC",
+            revision=1,
+            after_value_krw=100.0,
+            created_at=day1,
+        ),
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="ETH",
+            revision=1,
+            after_value_krw=50.0,
+            created_at=day1,
+        ),
+        # Day1 - latest revision (should be summed)
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="BTC",
+            revision=2,
+            after_value_krw=200.0,
+            created_at=day1 + timedelta(hours=6),
+        ),
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="ETH",
+            revision=2,
+            after_value_krw=80.0,
+            created_at=day1 + timedelta(hours=6),
+        ),
+        DailyAssetMetrics(
+            platform_id=platform2.id,
+            symbol="TSLA",
+            revision=1,
+            after_value_krw=300.0,
+            created_at=day1 + timedelta(hours=1),
+        ),
+        # Day2 - include intermediate and latest revisions
+        DailyAssetMetrics(
+            platform_id=platform2.id,
+            symbol="TSLA",
+            revision=2,
+            after_value_krw=320.0,
+            created_at=day2,
+        ),
+        DailyAssetMetrics(
+            platform_id=platform2.id,
+            symbol="TSLA",
+            revision=3,
+            after_value_krw=340.0,
+            created_at=day2 + timedelta(hours=5),
+        ),
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="BTC",
+            revision=3,
+            after_value_krw=220.0,
+            created_at=day2 + timedelta(hours=2),
+        ),
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="ETH",
+            revision=3,
+            after_value_krw=90.0,
+            created_at=day2 + timedelta(hours=2),
+        ),
+        # Older than the requested window (should be excluded entirely)
+        DailyAssetMetrics(
+            platform_id=platform1.id,
+            symbol="BTC",
+            revision=4,
+            after_value_krw=260.0,
+            created_at=now - timedelta(days=190),
+        ),
+    ]
+
+    db_session.add_all(metrics)
+    db_session.commit()
+
+    series = crud.get_portfolio_timeseries(db_session, days=30)
+
+    assert [row["date"] for row in series] == [day1.date(), day2.date()]
+    assert [row["total_krw"] for row in series] == pytest.approx([580.0, 650.0])
+
+
 def test_stable_coin_crud_flow(db_session):
     crud.create_stable_coin(db_session, symbol="USDT")
 
