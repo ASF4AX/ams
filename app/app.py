@@ -18,6 +18,7 @@ from crud.crud import (
     get_asset_distribution_by_category,
     get_recent_transactions,
     get_daily_change_percentage,
+    get_portfolio_timeseries,
 )
 
 # 데이터베이스 테이블 생성
@@ -102,21 +103,37 @@ try:
 
     with col_right:
         st.subheader("자산 추이")
-        if True:
+        selected_days = st.selectbox(
+            "조회 기간",
+            options=[7, 30, 90, 180],
+            index=1,
+            format_func=lambda value: f"{value}일",
+        )
+        timeseries = get_portfolio_timeseries(db, days=int(selected_days))
+        if not timeseries:
             st.info("자산 추이 데이터가 없습니다.")
         else:
-            # performance_data 구조: DataFrame[날짜, 자산가치]
+            df_series = pd.DataFrame(timeseries)
+            df_series["date"] = pd.to_datetime(df_series["date"])
+            df_series = df_series.sort_values("date")
+            df_series = df_series.set_index("date")
+            full_range = pd.date_range(
+                start=df_series.index.min(),
+                end=df_series.index.max(),
+                freq="D",
+            )
+            df_series = df_series.reindex(full_range).ffill()
+            df_series = df_series.reset_index().rename(
+                columns={"index": "날짜", "total_krw": "자산가치"}
+            )
             fig_line = px.line(
-                performance_data,
+                df_series,
                 x="날짜",
                 y="자산가치",
-                title="최근 30일 자산 가치 추이 (KRW)",
+                title=f"최근 {int(selected_days)}일 자산 가치 추이 (KRW)",
                 labels={"자산가치": "총 자산 가치 (KRW)", "날짜": "날짜"},
             )
-            # y축 형식을 원화로 설정
-            fig_line.update_layout(
-                yaxis_tickformat="₩,"
-            )  # 정수형이 아닐 수 있으므로 ',' 사용
+            fig_line.update_layout(yaxis_tickprefix="₩", yaxis_tickformat=",.0f")
             st.plotly_chart(fig_line, use_container_width=True)
 
     st.subheader("최근 거래 내역")

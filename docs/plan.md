@@ -28,4 +28,7 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] 자산별 원형차트 라벨/집계 기준을 심볼→이름으로 변경 (`app/pages/1_자산현황.py`)
 - [x] 자산별 원형차트 위치를 "총 평가금액" 바로 아래로 이동, 소제목 제거 (`app/pages/1_자산현황.py`)
 - [x] 자산 분포 원형차트 컴포넌트화 (`app/components/asset_pie.py`) 및 페이지 적용
- - [x] 컴포넌트 유닛 테스트: 자산 분포 원형차트 (`tests/app/components/test_asset_pie.py`)
+- [x] 컴포넌트 유닛 테스트: 자산 분포 원형차트 (`tests/app/components/test_asset_pie.py`)
+- [x] 대시보드 자산 추이 시계열 집계 추가 (`app/crud/crud.py`)
+- [x] 자산 추이 차트/기간 선택 UI 구현 (`app/app.py`)
+- [x] 포트폴리오 시계열 테스트 및 문서 업데이트 (`tests/app/crud/test_crud.py`, `README.md`)

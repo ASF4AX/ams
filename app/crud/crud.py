@@ -366,6 +366,58 @@ def get_asset_distribution_by_platform(db: Session) -> list[dict]:
     ]
 
 
+def get_portfolio_timeseries(db: Session, days: int = 30) -> list[dict]:
+    """일자별 총 자산 가치(원화) 시계열을 반환합니다."""
+
+    if days <= 0:
+        return []
+
+    cutoff = datetime.now() - timedelta(days=days)
+    day_expr = func.date(DailyAssetMetrics.created_at)
+
+    latest_revision_per_day = (
+        db.query(
+            DailyAssetMetrics.platform_id.label("platform_id"),
+            day_expr.label("day"),
+            func.max(DailyAssetMetrics.revision).label("latest_revision"),
+        )
+        .filter(DailyAssetMetrics.created_at >= cutoff)
+        .group_by(DailyAssetMetrics.platform_id, day_expr)
+        .subquery()
+    )
+
+    query = (
+        db.query(
+            latest_revision_per_day.c.day.label("day"),
+            func.sum(DailyAssetMetrics.after_value_krw).label("total_krw"),
+        )
+        .join(
+            DailyAssetMetrics,
+            (DailyAssetMetrics.platform_id == latest_revision_per_day.c.platform_id)
+            & (func.date(DailyAssetMetrics.created_at) == latest_revision_per_day.c.day)
+            & (DailyAssetMetrics.revision == latest_revision_per_day.c.latest_revision),
+        )
+        .filter(DailyAssetMetrics.created_at >= cutoff)
+        .filter(DailyAssetMetrics.after_value_krw.isnot(None))
+        .group_by(latest_revision_per_day.c.day)
+        .order_by(latest_revision_per_day.c.day)
+    )
+
+    results: list[dict] = []
+    for day, total in query.all():
+        if total is None:
+            continue
+        if isinstance(day, str):
+            day_value = datetime.fromisoformat(day).date()
+        elif isinstance(day, datetime):
+            day_value = day.date()
+        else:
+            day_value = day
+        results.append({"date": day_value, "total_krw": float(total)})
+
+    return results
+
+
 # StableCoin CRUD 작업
 def get_all_stable_coins(db: Session):
     """모든 스테이블코인 목록 조회"""

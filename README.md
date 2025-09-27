@@ -6,8 +6,8 @@
 
 - Dashboard (`app/app.py`)
 
-  - 요약: 총 자산, 일일 변화율, 카테고리 분포, 최근 거래를 한눈에 확인
-  - 주요 동작: 최신 리비전 기준 합산(`get_total_asset_value`), 일일 수익률(`get_daily_change_percentage`)
+  - 요약: 총 자산, 일일 변화율, 카테고리 분포, 자산 추이(일별 시계열), 최근 거래를 한눈에 확인
+  - 주요 동작: 최신 리비전 기준 합산(`get_total_asset_value`), 일일 수익률(`get_daily_change_percentage`), 일자별 포트폴리오 시계열(`get_portfolio_timeseries`)
 
 - 자산현황 (`app/pages/1_자산현황.py`)
 
