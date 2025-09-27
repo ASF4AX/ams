@@ -109,14 +109,14 @@ try:
                 display_df = group.drop(columns=["원화평가금액_숫자"]).copy()
 
                 # 손익과 손익률에 색상 적용
-                styled_df = display_df.style.applymap(
+                styled_df = display_df.style.map(
                     color_negative_red, subset=["평가손익", "평가손익률"]
                 )
 
                 # 데이터프레임 표시
                 st.dataframe(
                     styled_df,
-                    use_container_width=True,
+                    width='stretch',
                     hide_index=True,
                     column_order=(
                         "거래소",

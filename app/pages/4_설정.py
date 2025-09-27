@@ -89,7 +89,7 @@ try:
         # 수정 가능한 데이터프레임 표시
         edited_df = st.data_editor(
             df,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             column_config={
                 "심볼": st.column_config.TextColumn(
