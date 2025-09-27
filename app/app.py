@@ -133,8 +133,9 @@ try:
                 title=f"최근 {int(selected_days)}일 자산 가치 추이 (KRW)",
                 labels={"자산가치": "총 자산 가치 (KRW)", "날짜": "날짜"},
             )
-            fig_line.update_layout(yaxis_tickprefix="₩", yaxis_tickformat=",.0f")
-            st.plotly_chart(fig_line, use_container_width=True)
+            # y축 형식을 원화로 설정하고 차트 폭을 레이아웃에 맞춤
+            fig_line.update_layout(yaxis_tickformat="₩,")
+            st.plotly_chart(fig_line, width="stretch")
 
     st.subheader("최근 거래 내역")
     if recent_transactions.empty:
