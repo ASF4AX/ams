@@ -58,4 +58,4 @@ def render_portfolio_timeseries(
     )
     # main 포맷에 맞춘 y축 형식과 차트 폭
     fig_line.update_layout(yaxis_tickformat="₩,")
-    st.plotly_chart(fig_line, width="stretch")
+    st.plotly_chart(fig_line, use_container_width=True)
