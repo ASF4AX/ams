@@ -1,5 +1,5 @@
 import ccxt
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Callable, Optional
 from airflow.hooks.base import BaseHook
 from utils.db import (
     get_db_session,
@@ -9,6 +9,52 @@ from utils.db import (
     get_active_stable_coins,
 )
 import traceback
+
+
+def _fetch_all_simple_earn_positions(
+    fetch_page: Callable[[Dict[str, Any]], Dict[str, Any]],
+    *,
+    page_size: int = 100,
+    max_pages: Optional[int] = 10,
+) -> List[Dict[str, Any]]:
+    """Fetch all pages for a Simple Earn endpoint using Binance SAPI pagination."""
+
+    positions: List[Dict[str, Any]] = []
+    current = 1
+
+    while True:
+        params = {"current": current, "size": page_size}
+        try:
+            response = fetch_page(params) or {}
+        except Exception as exc:  # pragma: no cover - defensive logging
+            print(
+                f"[ERROR] Earn 포지션 페이지 조회 실패 (page={current}): {exc}"
+            )
+            break
+
+        rows = response.get("rows") or []
+        if not isinstance(rows, list):
+            print(
+                f"[WARNING] Earn 포지션 응답 형식이 잘못되었습니다 (page={current})."
+            )
+            break
+
+        positions.extend(rows)
+        print(
+            f"[DEBUG] Earn 포지션 페이지 {current} 수집: {len(rows)}건"
+        )
+
+        if len(rows) < page_size:
+            break
+
+        current += 1
+        if max_pages is not None and current > max_pages:
+            print(
+                f"[WARNING] Earn 포지션 페이징이 최대 페이지({max_pages})에 도달했습니다."
+            )
+            break
+
+    return positions
 
 
 def load_binance_api_keys() -> Dict[str, str]:
@@ -32,16 +78,20 @@ def fetch_binance_balances(api_keys: Dict[str, str]) -> Dict[str, Any]:
         spot_balances = exchange.fetch_balance()
         print(f"[DEBUG] 바이낸스 스팟 잔고 조회 완료: {spot_balances['total']}")
 
-        # Earn 계정 잔고 조회 (새로운 방식)
-        flexible_positions = exchange.sapi_get_simple_earn_flexible_position()
-        locked_positions = exchange.sapi_get_simple_earn_locked_position()
+        # Earn 계정 잔고 조회 (페이징 처리)
+        flexible_positions = _fetch_all_simple_earn_positions(
+            lambda params: exchange.sapi_get_simple_earn_flexible_position(params)
+        )
+        locked_positions = _fetch_all_simple_earn_positions(
+            lambda params: exchange.sapi_get_simple_earn_locked_position(params)
+        )
 
         # Earn 잔고 계산
         earn_balances = {"total": {}}
 
         # 유동성 포지션 처리
-        if "rows" in flexible_positions:
-            for position in flexible_positions["rows"]:
+        if flexible_positions:
+            for position in flexible_positions:
                 currency = position["asset"]
                 amount = float(position["totalAmount"])
                 if amount > 0:
@@ -51,8 +101,8 @@ def fetch_binance_balances(api_keys: Dict[str, str]) -> Dict[str, Any]:
                         earn_balances["total"][currency] = amount
 
         # 락업 포지션 처리
-        if "rows" in locked_positions:
-            for position in locked_positions["rows"]:
+        if locked_positions:
+            for position in locked_positions:
                 currency = position["asset"]
                 amount = float(position["amount"])
                 if amount > 0:
