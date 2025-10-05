@@ -18,7 +18,7 @@ from crud.crud import (
     get_daily_change_percentage,
 )
 from crud.metrics import get_portfolio_period_return
-from components.asset_trend import render_portfolio_timeseries
+from components.asset_trend_by_platform import render_platform_timeseries
 
 # 데이터베이스 테이블 생성
 initialize_db(drop_all=False)
@@ -96,9 +96,8 @@ try:
             f"{period_return:.1f}%" if period_return is not None else "N/A",
         )
 
-    # 자산 추이 (상단, 전체 폭) 컴포넌트
-    # 오늘 포인트를 현재 총자산 값으로 반영해 표시
-    render_portfolio_timeseries(
+    # 자산 추이 섹션: 기존 전체 추이를 플랫폼별 area 방식으로 대체
+    render_platform_timeseries(
         db, days=int(selected_days), use_current_value_today=True
     )
 
