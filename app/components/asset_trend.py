@@ -4,7 +4,8 @@ import plotly.express as px
 from datetime import date
 
 # 로컬 모듈
-from crud.crud import get_portfolio_timeseries, get_total_asset_value
+from crud.timeseries import get_portfolio_timeseries
+from crud.crud import get_total_asset_value
 
 
 def render_portfolio_timeseries(
