@@ -1,16 +1,18 @@
-import streamlit as st
 import os
-from dotenv import load_dotenv
 import pandas as pd
+import streamlit as st
+
+from dotenv import load_dotenv
 
 # 로컬 모듈 임포트
-from utils.db import initialize_db, test_connection, get_db_session
+from utils.db import test_connection, get_db_session
 from crud.crud import (
     get_all_stable_coins,
     create_stable_coin,
     update_stable_coin_status,
     get_stable_coin_by_symbol,
 )
+from components.manual_asset_manager import render_manual_asset_manager
 
 # 페이지 확장 설정
 st.set_page_config(layout="wide")
@@ -31,21 +33,7 @@ else:
     st.error(f"데이터베이스 연결 상태: {db_status}")
     st.warning("데이터베이스 연결에 문제가 있습니다. 설정을 확인하세요.")
 
-st.subheader("데이터 관리")
-
-if st.button("데이터베이스 초기화"):
-    if connection_successful:
-        try:
-            # 기존 테이블 삭제하고 새로 생성
-            initialize_db(drop_all=True)
-            st.success("데이터베이스가 초기화되었습니다.")
-        except Exception as e:
-            st.error(f"데이터베이스 초기화 실패: {str(e)}")
-    else:
-        st.error("데이터베이스 연결이 불가능하여 초기화할 수 없습니다.")
-
 st.markdown("---")
-st.warning("데이터베이스 초기화 시 기존 데이터가 모두 삭제됩니다.")
 
 # 스테이블코인 관리 섹션
 st.subheader("스테이블코인 관리")
@@ -89,7 +77,7 @@ try:
         # 수정 가능한 데이터프레임 표시
         edited_df = st.data_editor(
             df,
-            width='stretch',
+            width="stretch",
             hide_index=True,
             column_config={
                 "심볼": st.column_config.TextColumn(
@@ -132,6 +120,19 @@ try:
 
 finally:
     db.close()
+
+# 섹션 구분선
+st.markdown("---")
+
+# 수동 자산 관리 섹션 (동일 DB 세션 재생성)
+db = get_db_session()
+try:
+    render_manual_asset_manager(db)
+finally:
+    db.close()
+
+# 섹션 구분선
+st.markdown("---")
 
 st.subheader("환경 정보")
 st.text(f"데이터베이스 호스트: {os.getenv('DB_HOST', '정보 없음')}")
