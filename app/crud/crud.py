@@ -11,6 +11,7 @@ from models.models import (
     DailyAssetMetrics,
     StableCoin,
     AssetCategory,
+    ExchangeRate,
 )
 
 # 로깅 설정
@@ -375,6 +376,19 @@ def get_all_stable_coins(db: Session):
 def get_active_stable_coins(db: Session):
     """활성화된 스테이블코인 목록 조회"""
     return db.query(StableCoin).filter(StableCoin.is_active == True).all()
+
+
+def get_exchange_rates_to_krw(db: Session) -> dict[str, float]:
+    """환율 맵 반환: {기준통화:→KRW 환율}. 항상 'KRW': 1.0 포함."""
+    rates: dict[str, float] = {"KRW": 1.0}
+    for base, rate in (
+        db.query(ExchangeRate.base_currency, ExchangeRate.rate)
+        .filter(ExchangeRate.target_currency == "KRW")
+        .all()
+    ):
+        if base is not None:
+            rates[base] = rate
+    return rates
 
 
 def get_stable_coin_by_symbol(db: Session, symbol: str):

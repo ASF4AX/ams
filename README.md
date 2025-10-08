@@ -26,8 +26,8 @@
 
 - 설정 (`app/pages/4_설정.py`)
 
-  - 요약: DB 상태/초기화, 스테이블코인 관리, 환경 정보
-  - 주요 동작: 연결 테스트/초기화(`initialize_db`), 스테이블코인 CRUD
+  - 요약: DB 상태/초기화, 수동 자산 관리, 스테이블코인 관리, 환경 정보
+  - 주요 동작: 스테이블코인 CRUD, 수동자산 표(st.data_editor) 관리
 
 - 백그라운드 자동화(Airflow, `dags/`)
   - 동기화: 거래소/증권사 자산 동기화 DAGs(`sync_*.py`)
@@ -103,7 +103,6 @@ python app/utils/seed_data.py
 ```
 pytest            # 전체 테스트 실행 (verbose)
 ```
-
 
 ## Docker로 스트림릿만 실행 (고급)
 
