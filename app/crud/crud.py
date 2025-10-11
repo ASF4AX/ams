@@ -287,7 +287,7 @@ def get_total_asset_value(db: Session) -> float:
 
 
 def get_daily_change_percentage(db: Session) -> float:
-    """플랫폼별 최신 리비전 기준 일일 자산 가치 변화율(%)을 반환합니다."""
+    """[Deprecated] 일일 변화율. 대신 `get_portfolio_period_return(db, days=1)` 사용."""
     latest_revisions = _get_latest_metric_revision_per_platform(db)
     if not latest_revisions:
         return 0.0

@@ -15,7 +15,6 @@ from utils.db import get_db_session, initialize_db
 from crud.crud import (
     get_total_asset_value,
     get_recent_transactions,
-    get_daily_change_percentage,
 )
 from crud.metrics import get_portfolio_period_return
 from components.asset_trend_by_platform import render_platform_timeseries
@@ -45,9 +44,6 @@ try:
     # 데이터베이스에서 데이터 가져오기
     total_value = get_total_asset_value(db)
 
-    # --- 데이터 가져오기 (DailyAssetMetrics 기반) ---
-    daily_change = get_daily_change_percentage(db)
-
     # 최근 거래 내역
     transactions = get_recent_transactions(db, days=30)
     transactions_data = []
@@ -75,14 +71,19 @@ try:
     )
 
     # 기간별 수익률 계산 (집계 엔드포인트만 조회)
+    daily_return = get_portfolio_period_return(db, days=1)
     monthly_return = get_portfolio_period_return(db, days=30)
     period_return = get_portfolio_period_return(db, days=int(selected_days))
 
     # --- 대시보드 UI 부분 (데이터 표시 로직 업데이트) ---
     col1, col2, col3 = st.columns(3)
     with col1:
-        # 총 자산 메트릭: daily_change 값을 delta로 사용
-        st.metric("총 자산", f"₩{total_value:,.0f}", f"{daily_change:.1f}%")
+        # 총 자산 메트릭: daily_return 값을 delta로 사용 (없으면 N/A)
+        st.metric(
+            "총 자산",
+            f"₩{total_value:,.0f}",
+            f"{float(daily_return):.1f}%" if daily_return is not None else "N/A",
+        )
     with col2:
         # 월 수익률 (30일 기준)
         st.metric(
