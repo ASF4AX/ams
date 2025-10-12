@@ -54,14 +54,18 @@ try:
     )
     reflect_flows = st.toggle(
         "입출금 반영",
-        value=False,
-        help="입출금 제외 수익률 (반영 예정)",
+        value=True,
+        help="입출금 반영 수익률 계산",
     )
 
     # 기간별 수익률 계산 (집계 엔드포인트만 조회)
-    daily_return = get_portfolio_period_return(db, days=1)
-    monthly_return = get_portfolio_period_return(db, days=30)
-    period_return = get_portfolio_period_return(db, days=int(selected_days))
+    daily_return = get_portfolio_period_return(db, days=1, reflect_flows=reflect_flows)
+    monthly_return = get_portfolio_period_return(
+        db, days=30, reflect_flows=reflect_flows
+    )
+    period_return = get_portfolio_period_return(
+        db, days=int(selected_days), reflect_flows=reflect_flows
+    )
 
     # --- 대시보드 UI 부분 (데이터 표시 로직 업데이트) ---
     col1, col2, col3 = st.columns(3)
