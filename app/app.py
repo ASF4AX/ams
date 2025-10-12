@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import streamlit as st
-import pandas as pd
 from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -18,6 +17,7 @@ from crud.crud import (
 )
 from crud.metrics import get_portfolio_period_return
 from components.asset_trend_by_platform import render_platform_timeseries
+from components.transactions_table import render_transactions_table
 
 # 데이터베이스 테이블 생성
 initialize_db(drop_all=False)
@@ -44,30 +44,18 @@ try:
     # 데이터베이스에서 데이터 가져오기
     total_value = get_total_asset_value(db)
 
-    # 최근 거래 내역
-    transactions = get_recent_transactions(db, days=30)
-    transactions_data = []
-    for tx in transactions:
-        # asset 정보 로드가 필요하면 lazy='joined' 또는 별도 쿼리 필요
-        # 여기서는 asset.name이 필요하므로, get_recent_transactions에서 join 로딩 고려
-        asset_name = tx.asset.name if tx.asset else "N/A"  # 로딩 확인
-        transactions_data.append(
-            {
-                "날짜": tx.transaction_date.strftime("%Y-%m-%d"),
-                "자산": asset_name,
-                "종류": tx.transaction_type,
-                "금액": tx.amount,  # Transaction amount는 KRW가 아닐 수 있음. 표시 주의
-            }
-        )
-    recent_transactions = pd.DataFrame(transactions_data)
-
-    # 조회 기간 선택 (차트 외부)
+    # 조회 기간 선택 (차트 외부) 및 옵션 토글
     selected_days = st.selectbox(
         "조회 기간",
         options=[30, 90, 180],
         index=1,
         format_func=lambda value: f"{value}일",
         key="portfolio_period",
+    )
+    reflect_flows = st.toggle(
+        "입출금 반영",
+        value=False,
+        help="입출금 제외 수익률 (반영 예정)",
     )
 
     # 기간별 수익률 계산 (집계 엔드포인트만 조회)
@@ -104,24 +92,16 @@ try:
 
     # 메인 페이지에서는 '자산 분포' 섹션을 제거했습니다.
 
+    transactions = get_recent_transactions(db, days=30)
     st.subheader("최근 거래 내역")
-    if recent_transactions.empty:
-        st.info("최근 거래 내역이 없습니다.")
+    if transactions:
+        render_transactions_table(transactions, include_memo=False)
     else:
-        st.dataframe(
-            recent_transactions,
-            width="stretch",
-            hide_index=True,
-            # 거래 금액(tx.amount)의 통화가 KRW가 아닐 수 있음에 유의
-            column_config={
-                "금액": st.column_config.NumberColumn(format="₩ %d")
-            },  # 형식을 KRW로 가정
-        )
+        st.info("최근 거래 내역이 없습니다.")
 
 finally:
     # 데이터베이스 세션 종료
     db.close()
 
-# 푸터
 st.markdown("---")
 st.caption("© 2025 자산 관리 시스템 | 버전 0.1.1")  # 버전 업데이트
