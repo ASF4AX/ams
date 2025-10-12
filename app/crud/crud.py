@@ -1,5 +1,6 @@
 import logging
 from sqlalchemy.orm import Session
+from typing import Optional
 from sqlalchemy import func
 from sqlalchemy.sql import select
 from datetime import datetime, timedelta
@@ -239,18 +240,27 @@ def create_transaction(
     quantity: float,
     memo: str = None,
     transaction_date: datetime = None,
+    *,
+    flow_fx_to_krw: Optional[float] = None,
 ):
     """거래 내역 생성"""
     if transaction_date is None:
         transaction_date = datetime.now()
 
     amount = price * quantity
+    flow_amount_krw = None
+    if flow_fx_to_krw is not None and transaction_type in ("입금", "출금"):
+        raw_krw = amount * flow_fx_to_krw
+        flow_amount_krw = raw_krw if transaction_type == "입금" else -abs(raw_krw)
+
     transaction = Transaction(
         asset_id=asset_id,
         transaction_type=transaction_type,
         price=price,
         quantity=quantity,
         amount=amount,
+        flow_amount_krw=flow_amount_krw,
+        flow_fx_to_krw=flow_fx_to_krw,
         memo=memo,
         transaction_date=transaction_date,
     )

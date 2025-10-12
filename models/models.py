@@ -96,6 +96,16 @@ class Transaction(Base):
     price = Column(Float)
     quantity = Column(Float)
     amount = Column(Float)
+    flow_amount_krw = Column(
+        Float,
+        nullable=True,
+        comment="원화금액",
+    )
+    flow_fx_to_krw = Column(
+        Float,
+        nullable=True,
+        comment="거래시점 환율",
+    )
     memo = Column(String, nullable=True)
     transaction_date = Column(DateTime, default=datetime.now)
     created_at = Column(DateTime, default=datetime.now)
