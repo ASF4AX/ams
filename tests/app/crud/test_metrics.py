@@ -3,6 +3,8 @@ from __future__ import annotations
 import pytest
 
 from app.crud import metrics as metrics_mod
+from app.crud import crud
+from models.models import AssetCategory
 from datetime import datetime, timedelta, time
 from sqlalchemy.orm import Session
 
@@ -86,3 +88,91 @@ def test_period_return_none_when_no_day_on_or_after_cutoff(
 def test_period_return_none_when_days_non_positive(db_session: Session):
     assert metrics_mod.get_portfolio_period_return(db_session, days=0) is None
     assert metrics_mod.get_portfolio_period_return(db_session, days=-5) is None
+
+
+# --- Flow-adjusted return tests (reflect_flows=True) ---
+
+
+def _make_krw_asset(db: Session):
+    platform = crud.create_platform(db, name="Upbit", category="거래소")
+    asset = crud.create_asset(
+        db,
+        name="KRW",
+        symbol="KRW",
+        category=AssetCategory.CASH.value,
+        platform_id=platform.id,
+        current_price=1.0,
+        quantity=0.0,
+        revision=1,
+    )
+    return platform, asset
+
+
+@pytest.mark.parametrize(
+    "flows, expected_adjusted",
+    [
+        # within window: +200, -50 => net +150; adjusted = 35%
+        (
+            [(3, "입금", 200.0), (1, "출금", 50.0)],
+            35.0,
+        ),
+        # outside window (8 days), cutoff-day (7 days) ignored, inside counted (+100 on day 6); adjusted = 40%
+        (
+            [(8, "입금", 999.0), (7, "입금", 70.0), (6, "입금", 100.0)],
+            40.0,
+        ),
+    ],
+)
+def test_period_return_with_flows_parametrized(
+    sample_data_factory,
+    db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+    flows,
+    expected_adjusted,
+):
+    # Stub current snapshot to 1500 for this test
+    monkeypatch.setattr(metrics_mod, "get_total_asset_value", lambda _db: 1500.0)
+
+    # Ensure target day within 7 days has past_total = 1000
+    p1 = sample_data_factory.platform(name="P1")
+    p2 = sample_data_factory.platform(name="P2")
+    recent_day = day_n_days_ago(5)
+    sample_data_factory.daily_metric(
+        platform=p1,
+        symbol="BTC",
+        revision=1,
+        after_value_krw=400.0,
+        created_at=recent_day,
+    )
+    sample_data_factory.daily_metric(
+        platform=p2,
+        symbol="ETH",
+        revision=1,
+        after_value_krw=600.0,
+        created_at=recent_day,
+    )
+
+    # Create KRW asset and parameterized flows
+    _, krw_asset = _make_krw_asset(db_session)
+    for days_ago, tx_type, qty in flows:
+        crud.create_transaction(
+            db_session,
+            asset_id=krw_asset.id,
+            transaction_type=tx_type,
+            price=1.0,
+            quantity=float(qty),
+            transaction_date=day_n_days_ago(int(days_ago)),
+            flow_fx_to_krw=1.0,
+        )
+
+    # Plain return (no reflection) should remain 50%
+    plain = metrics_mod.get_portfolio_period_return(
+        db_session, days=7, reflect_flows=False
+    )
+    assert plain == pytest.approx(50.0)
+
+    # Adjusted return matches expected per flow set
+    adjusted = metrics_mod.get_portfolio_period_return(
+        db_session, days=7, reflect_flows=True
+    )
+    assert adjusted == pytest.approx(expected_adjusted)
