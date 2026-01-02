@@ -2,6 +2,8 @@
 
 개인 투자자를 위한 경량 자산 관리 웹앱입니다. Streamlit로 UI를 제공하고, PostgreSQL에 데이터를 저장합니다. Airflow DAGs로 거래소/증권사 동기화 및 일일 지표 수집을 자동화합니다.
 
+<img width="1097" height="698" alt="image" src="https://github.com/user-attachments/assets/b7e05c39-62e3-42ad-87b8-21e6e666424a" />
+
 ## 기능과 화면
 
 - Dashboard (`app/app.py`)
