@@ -47,7 +47,7 @@ try:
     # 조회 기간 선택 (차트 외부) 및 옵션 토글
     selected_days = st.selectbox(
         "조회 기간",
-        options=[30, 90, 180],
+        options=[90, 180, 360],
         index=1,
         format_func=lambda value: f"{value}일",
         key="portfolio_period",
