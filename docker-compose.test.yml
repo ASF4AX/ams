@@ -8,6 +8,7 @@ x-airflow-common: &airflow-common
     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
     - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
     - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=False
+    - AIRFLOW_CONN_AMS=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
   volumes:
     - airflow_data:/opt/airflow
     - ./dags:/opt/airflow/dags
@@ -42,7 +43,6 @@ services:
     command: >
       bash -c "
         pip install --no-cache-dir -r /opt/airflow/requirements-dags.txt &&
-        pip install apache-airflow-providers-postgres &&
         airflow webserver
       "
     restart: always
@@ -56,7 +56,6 @@ services:
     command: >
       bash -c "
         pip install --no-cache-dir -r /opt/airflow/requirements-dags.txt &&
-        pip install apache-airflow-providers-postgres &&
         airflow scheduler
       "
     restart: always
@@ -72,7 +71,6 @@ services:
     command: >
       bash -c "
         pip install --no-cache-dir -r /opt/airflow/requirements-dags.txt &&
-        pip install apache-airflow-providers-postgres &&
         airflow db migrate &&
         airflow users create --username ${AIRFLOW_ADMIN_USERNAME} --firstname ${AIRFLOW_ADMIN_FIRSTNAME} --lastname ${AIRFLOW_ADMIN_LASTNAME} --role ${AIRFLOW_ADMIN_ROLE} --email ${AIRFLOW_ADMIN_EMAIL} --password ${AIRFLOW_ADMIN_PASSWORD}
       "
