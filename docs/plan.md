@@ -15,3 +15,4 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] 플랫폼별 자산 추이 그래프 추가: CRUD 집계 및 컴포넌트/탭 연동, 기본 유닛 테스트 (`app/crud/crud.py`, `app/components/asset_trend_by_platform.py`, `app/app.py`, `tests/app/components/test_asset_trend_by_platform.py`)
 - [x] 입출금 반영 수익률(간단 버전): 기간 내 순입출금 합계를 현재값에서 제외하여 수익률 계산, 토글 연동 (`app/crud/metrics.py`, `app/app.py`)
 - [x] 메인 조회 기간 옵션 조정: `30/90/180` → `90/180/360`으로 변경 (`app/app.py`)
+- [x] 한국투자증권 국내 예수금 기준 조정: 체결기준 합산용 현금을 `D+2(prvs_rcdl_excc_amt)`만 사용하도록 변경 (`dags/tasks/kis.py`, `tests/dags/tasks/test_kis.py`)

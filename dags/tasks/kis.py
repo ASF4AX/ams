@@ -192,12 +192,17 @@ def process_kis_assets(
 
     # 예수금 처리
     try:
+        def _d2_cash(summary_item: Dict[str, Any]) -> float:
+            """체결기준 합산용 국내 현금은 D+2 정산 금액만 사용합니다."""
+            raw = summary_item.get("prvs_rcdl_excc_amt", 0)
+            return float(raw or 0)
+
         # summary가 리스트인 경우 첫 번째 항목 사용, 딕셔너리인 경우 그대로 사용
         if isinstance(summary, list) and len(summary) > 0:
             summary_item = summary[0]
-            deposit = float(summary_item.get("dnca_tot_amt", 0))  # 예수금 총금액
+            deposit = _d2_cash(summary_item)
         elif isinstance(summary, dict):
-            deposit = float(summary.get("dnca_tot_amt", 0))  # 예수금 총금액
+            deposit = _d2_cash(summary)
         else:
             print("[WARNING] 예수금 정보가 예상 형식이 아님. 기본값 0 사용.")
             deposit = 0
