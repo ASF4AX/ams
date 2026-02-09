@@ -32,7 +32,7 @@ def test_process_kis_assets_converts_numeric_fields_and_appends_deposit() -> Non
             },
         ],
         "output2": [
-            {"dnca_tot_amt": "500000"},
+            {"prvs_rcdl_excc_amt": "500000", "dnca_tot_amt": "999999"},
         ],
     }
 
@@ -69,7 +69,7 @@ def test_process_kis_assets_converts_numeric_fields_and_appends_deposit() -> Non
 def test_process_kis_assets_supports_dict_summary() -> None:
     balance_data = {
         "output1": [],
-        "output2": {"dnca_tot_amt": "123.45"},
+        "output2": {"prvs_rcdl_excc_amt": "123.45", "dnca_tot_amt": "999999"},
     }
 
     assets = process_kis_assets(balance_data, revision=7)
@@ -87,6 +87,17 @@ def test_process_kis_assets_supports_dict_summary() -> None:
             "revision": 7,
         }
     ]
+
+
+def test_process_kis_assets_ignores_dnca_when_d2_missing() -> None:
+    balance_data = {
+        "output1": [],
+        "output2": {"dnca_tot_amt": "1000", "nxdy_excc_amt": "500"},
+    }
+
+    assets = process_kis_assets(balance_data, revision=7)
+
+    assert assets == []
 
 
 def test_process_kis_overseas_assets_deduplicates_and_derives_fields() -> None:
