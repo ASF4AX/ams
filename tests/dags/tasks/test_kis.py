@@ -105,6 +105,7 @@ def test_process_kis_overseas_assets_deduplicates_and_derives_fields() -> None:
         {
             "pdno": "AAPL",
             "cblc_qty13": "2",
+            "ccld_qty_smtl1": "2",
             "ovrs_now_pric1": "150.5",
             "avg_unpr3": "120.1",
             "evlu_pfls_amt2": "60.2",
@@ -117,6 +118,7 @@ def test_process_kis_overseas_assets_deduplicates_and_derives_fields() -> None:
         {
             "pdno": "AAPL",
             "cblc_qty13": "5",
+            "ccld_qty_smtl1": "5",
             "ovrs_now_pric1": "170.0",
             "buy_crcy_cd": "USD",
             "ovrs_excg_cd": "NASDAQ",
@@ -124,6 +126,7 @@ def test_process_kis_overseas_assets_deduplicates_and_derives_fields() -> None:
         {
             "pdno": "TSLA",
             "cblc_qty13": "3",
+            "ccld_qty_smtl1": "3",
             "ovrs_now_pric1": "not-a-number",
             "avg_unpr3": "",
             "evlu_pfls_amt2": None,
@@ -135,6 +138,7 @@ def test_process_kis_overseas_assets_deduplicates_and_derives_fields() -> None:
         {
             "pdno": "BABA",
             "cblc_qty13": "0",
+            "ccld_qty_smtl1": "0",
             "ovrs_now_pric1": "80",
             "buy_crcy_cd": "HKD",
             "ovrs_excg_cd": "NYSE",
@@ -172,6 +176,46 @@ def test_process_kis_overseas_assets_deduplicates_and_derives_fields() -> None:
     assert tsla["revision"] == 11
 
 
+def test_process_kis_overseas_assets_prefers_ccld_qty_smtl1() -> None:
+    stock_list = [
+        {
+            "pdno": "AAPL",
+            "cblc_qty13": "2",
+            "ccld_qty_smtl1": "3",
+            "ovrs_now_pric1": "100",
+            "avg_unpr3": "90",
+            "evlu_pfls_amt2": "10",
+            "evlu_pfls_rt1": "11.11",
+            "natn_kor_name": "미국",
+            "prdt_name": "애플",
+            "buy_crcy_cd": "USD",
+            "ovrs_excg_cd": "NASD",
+        }
+    ]
+
+    assets = process_kis_overseas_assets(stock_list, revision=12)
+
+    assert len(assets) == 1
+    assert assets[0]["quantity"] == 3.0
+    assert assets[0]["evaluation_amount"] == 300.0
+
+
+def test_process_kis_overseas_assets_skips_when_ccld_qty_missing() -> None:
+    stock_list = [
+        {
+            "pdno": "MSFT",
+            "cblc_qty13": "7",
+            "ovrs_now_pric1": "120",
+            "buy_crcy_cd": "USD",
+            "ovrs_excg_cd": "NASD",
+        }
+    ]
+
+    assets = process_kis_overseas_assets(stock_list, revision=15)
+
+    assert assets == []
+
+
 def test_process_kis_overseas_cash_skips_zero_and_duplicates() -> None:
     cash_list = [
         {"crcy_cd": "USD", "frcr_dncl_amt_2": "100.5"},
@@ -206,6 +250,24 @@ def test_process_kis_overseas_cash_skips_zero_and_duplicates() -> None:
             "revision": 13,
         },
     ]
+
+
+def test_process_kis_overseas_cash_uses_settled_cash_formula() -> None:
+    cash_list = [
+        {
+            "crcy_cd": "USD",
+            "frcr_buy_amt_smtl": "4.67",
+            "frcr_sll_amt_smtl": "7.86",
+            "frcr_dncl_amt_2": "7.56",
+        }
+    ]
+
+    assets = process_kis_overseas_cash(cash_list, revision=14)
+
+    assert len(assets) == 1
+    assert assets[0]["symbol"] == "USD"
+    assert math.isclose(assets[0]["quantity"], 10.75)
+    assert math.isclose(assets[0]["evaluation_amount"], 10.75)
 
 
 def test_process_kis_exchange_rates_filters_invalid_entries() -> None:
