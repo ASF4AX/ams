@@ -322,7 +322,7 @@ def process_kis_overseas_assets(
             if not symbol:
                 continue
 
-            quantity_str = stock.get("cblc_qty13", "0")  # 잔고수량13
+            quantity_str = stock.get("ccld_qty_smtl1", "0")  # 체결수량합계1
             quantity = float(quantity_str) if quantity_str else 0.0
             if quantity <= 0:
                 continue
@@ -442,13 +442,15 @@ def process_kis_overseas_cash(
     print(
         f"[INFO] process_kis_overseas_cash: 해외 예수금 {len(cash_list)}개 항목 처리 시작"
     )
+
     for cash_item in cash_list:
         try:
             currency_code = cash_item.get("crcy_cd")  # 통화코드
-            # --- 필드명 변경 (CTRP6504R output2 명세 기준) ---
-            amount_str = cash_item.get("frcr_dncl_amt_2", "0")  # 외화예수금액2
+            frcr_buy_amt_smtl = cash_item.get("frcr_buy_amt_smtl", "0")
+            frcr_sll_amt_smtl = cash_item.get("frcr_sll_amt_smtl", "0")
+            frcr_dncl_amt_2 = cash_item.get("frcr_dncl_amt_2", "0")
 
-            if not currency_code or not amount_str:
+            if not currency_code:
                 continue
 
             # 이미 처리된 통화 코드는 건너뛰기
@@ -456,7 +458,11 @@ def process_kis_overseas_cash(
                 print(f"[DEBUG] 이미 처리된 통화 건너뛰기 (예수금): {currency_code}")
                 continue
 
-            amount = float(amount_str)
+            amount = (
+                float(frcr_sll_amt_smtl)
+                - float(frcr_buy_amt_smtl)
+                + float(frcr_dncl_amt_2)
+            )
             # 금액이 0.0 인 경우만 무시
             if amount == 0.0:
                 # print(f"[DEBUG] 금액이 0이므로 무시: {currency_code} {amount}") # 필요시 주석 해제
@@ -659,6 +665,7 @@ def sync_kis_assets():
                 exchange_rate_data = process_kis_exchange_rates(output2)
             else:
                 print("[INFO] 해외 예수금/환율 정보 없음 (output2)")
+
         else:
             print("[WARNING] 해외 계좌 상세 정보를 가져오지 못했습니다.")
 

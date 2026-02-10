@@ -16,6 +16,8 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] 입출금 반영 수익률(간단 버전): 기간 내 순입출금 합계를 현재값에서 제외하여 수익률 계산, 토글 연동 (`app/crud/metrics.py`, `app/app.py`)
 - [x] 메인 조회 기간 옵션 조정: `30/90/180` → `90/180/360`으로 변경 (`app/app.py`)
 - [x] 한국투자증권 국내 예수금 기준 조정: 체결기준 합산용 현금을 `D+2(prvs_rcdl_excc_amt)`만 사용하도록 변경 (`dags/tasks/kis.py`, `tests/dags/tasks/test_kis.py`)
+- [x] 한국투자증권 해외 주식 수량 기준 확정: 체결기준 수량 `ccld_qty_smtl1`만 사용하도록 정리 (`dags/tasks/kis.py`, `tests/dags/tasks/test_kis.py`)
+- [x] 한국투자증권 해외 예수금 기준 확정: 외화 예수금을 `frcr_sll_amt_smtl - frcr_buy_amt_smtl + frcr_dncl_amt_2` 계산식으로 적용하고 비교용 로그 제거 (`dags/tasks/kis.py`, `tests/dags/tasks/test_kis.py`)
 - [x] 테스트용 Airflow 기동 안정화: `docker-compose.test.yml`에서 런타임 `apache-airflow-providers-postgres` 설치 제거(버전 충돌 방지)
 - [x] Airflow DAG DB 연결 고정: `conn_id=ams`를 `AIRFLOW_CONN_AMS` 환경변수로 테스트 스택에 주입
 - [x] Airflow DAG Postgres 드라이버 보강: `dags/requirements-dags.txt`에 `psycopg2-binary` 추가
