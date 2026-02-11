@@ -21,3 +21,4 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] 테스트용 Airflow 기동 안정화: `docker-compose.test.yml`에서 런타임 `apache-airflow-providers-postgres` 설치 제거(버전 충돌 방지)
 - [x] Airflow DAG DB 연결 고정: `conn_id=ams`를 `AIRFLOW_CONN_AMS` 환경변수로 테스트 스택에 주입
 - [x] Airflow DAG Postgres 드라이버 보강: `dags/requirements-dags.txt`에 `psycopg2-binary` 추가
+- [x] 예상 금리 현황 중복 표기 수정: `get_latest_cash_equivalent_annual_interest_info` 조인 키에 `exchange`를 포함해 동일 심볼 Spot/Futures 곱집합 중복 제거 및 회귀 테스트 추가 (`app/crud/crud.py`, `tests/app/crud/test_crud.py`)

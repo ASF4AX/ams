@@ -464,7 +464,11 @@ def get_latest_cash_equivalent_annual_interest_info(db: Session):
             .join(
                 Asset,
                 (Asset.platform_id == DailyAssetMetrics.platform_id)
-                & (Asset.symbol == DailyAssetMetrics.symbol),
+                & (Asset.symbol == DailyAssetMetrics.symbol)
+                & (
+                    func.coalesce(Asset.exchange, "")
+                    == func.coalesce(DailyAssetMetrics.exchange, "")
+                ),
             )
             .join(Platform, Platform.id == DailyAssetMetrics.platform_id)
             .filter(DailyAssetMetrics.platform_id == platform_id)
