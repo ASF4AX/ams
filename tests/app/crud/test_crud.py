@@ -375,3 +375,56 @@ def test_get_latest_cash_equivalent_annual_interest_info(db_session):
             "annual_yield_decimal": pytest.approx(0.01 * 365),
         }
     ]
+
+
+def test_get_latest_cash_equivalent_annual_interest_info_joins_on_exchange(db_session):
+    platform = _create_platform(db_session)
+
+    spot_asset = Asset(
+        name="Tether Spot",
+        symbol="USDT",
+        category=AssetCategory.STABLE_COIN.value,
+        platform_id=platform.id,
+        exchange="Spot",
+        current_price=1.0,
+        quantity=100.0,
+        evaluation_amount=100.0,
+        revision=1,
+    )
+    futures_asset = Asset(
+        name="Tether Futures",
+        symbol="USDT",
+        category=AssetCategory.STABLE_COIN.value,
+        platform_id=platform.id,
+        exchange="Futures",
+        current_price=1.0,
+        quantity=200.0,
+        evaluation_amount=200.0,
+        revision=1,
+    )
+
+    spot_metric = DailyAssetMetrics(
+        platform_id=platform.id,
+        exchange="Spot",
+        symbol="USDT",
+        revision=1,
+        return_rate=0.01,
+    )
+    futures_metric = DailyAssetMetrics(
+        platform_id=platform.id,
+        exchange="Futures",
+        symbol="USDT",
+        revision=1,
+        return_rate=0.02,
+    )
+
+    db_session.add_all([spot_asset, futures_asset, spot_metric, futures_metric])
+    db_session.commit()
+
+    results = crud.get_latest_cash_equivalent_annual_interest_info(db_session)
+    by_exchange = {row["exchange"]: row for row in results}
+
+    assert len(results) == 2
+    assert set(by_exchange.keys()) == {"Spot", "Futures"}
+    assert by_exchange["Spot"]["annual_yield_decimal"] == pytest.approx(0.01 * 365)
+    assert by_exchange["Futures"]["annual_yield_decimal"] == pytest.approx(0.02 * 365)
