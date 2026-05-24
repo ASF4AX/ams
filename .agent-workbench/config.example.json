@@ -1,0 +1,7 @@
+{
+  "api_targets": {
+    "local": "http://localhost:8000",
+    "dev": "http://replace-me:8000",
+    "prod": "https://replace-me.example.com"
+  }
+}

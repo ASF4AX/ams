@@ -1,5 +1,7 @@
 # 웹 애플리케이션
 streamlit
+fastapi
+uvicorn
 
 # 데이터베이스
 psycopg2-binary==2.9.9
@@ -21,6 +23,7 @@ apache-airflow==2.10.5
 # 개발 도구
 pytest==7.4.3
 black==23.12.1
+httpx
 
 # DAGs 관련
 ccxt==4.2.86

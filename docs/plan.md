@@ -4,7 +4,7 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 ## Current Goal
 
-대시보드 안정화 및 스테이징 정리(플랫폼별 area+총계 차트 확정, 불필요 코드 제거·기본값 일원화).
+에이전트 협업용 workbench와 읽기 전용 API 검증 자동화 기반 마련.
 
 ## Task List
 
@@ -22,3 +22,9 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] Airflow DAG DB 연결 고정: `conn_id=ams`를 `AIRFLOW_CONN_AMS` 환경변수로 테스트 스택에 주입
 - [x] Airflow DAG Postgres 드라이버 보강: `dags/requirements-dags.txt`에 `psycopg2-binary` 추가
 - [x] 예상 금리 현황 중복 표기 수정: `get_latest_cash_equivalent_annual_interest_info` 조인 키에 `exchange`를 포함해 동일 심볼 Spot/Futures 곱집합 중복 제거 및 회귀 테스트 추가 (`app/crud/crud.py`, `tests/app/crud/test_crud.py`)
+- [x] FastAPI 읽기 전용 API 추가: 총 자산/현재 자산/기간 수익률/시계열/일일 메트릭/거래내역/MDD 엔드포인트와 기본 테스트 작성 (`api/*`, `tests/api/test_main.py`)
+- [x] 운영 Compose에 API 서비스 추가: 동일 Docker 이미지 기반으로 Streamlit/API를 별도 서비스로 실행 (`Dockerfile`, `docker-compose.yml`)
+- [x] 운영 Compose 헬스체크 추가: Streamlit/API 컨테이너 HTTP healthcheck 구성 (`Dockerfile`, `docker-compose.yml`)
+- [x] API 테스트 안정화 검토: override 정리 범위 축소, lifespan async 테스트 전환, UTC 기준 날짜 계산, 누락 commit 보강 (`tests/api/test_main.py`)
+- [x] 에이전트 workbench 가이드 추가: `.agent-workbench/` 용도, target config 예시, API smoke check helper 작성
+- [x] API 테스트 후속 검증: lifespan 스키마 초기화 미수행 검증 보강 및 기간 수익률/시계열 commit 존재 확인 (`tests/api/test_main.py`)

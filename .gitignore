@@ -128,6 +128,16 @@ ENV/
 env.bak/
 venv.bak/
 
+# Agent workbench
+.agent-workbench/*
+!.agent-workbench/AGENTS.md
+!.agent-workbench/README.md
+!.agent-workbench/config.example.json
+!.agent-workbench/queries/
+!.agent-workbench/queries/*.py
+.agent-workbench/config.json
+.agent-workbench/scratch/
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -281,6 +291,7 @@ data/
 *.csv
 *.xlsx
 *.json
+!.agent-workbench/config.example.json
 
 # Cache directories
 .cache/

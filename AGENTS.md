@@ -8,6 +8,10 @@ Coding agents using this repository should:
 
 - Read `PRD.md` to understand features and requirements.
 - Consult documents in `docs/` for implementation details and best practices.
+- When asked to check assigned work, inspect `.agent-bridge/` first:
+  - Read `.agent-bridge/JOBS.md` to find the latest incomplete JOB.
+  - Open the referenced `JOB-*.md` file for the detailed assignment.
+  - Treat `.agent-bridge/` as the external agent collaboration workspace; it may be a symlink outside this repository.
 - Produce reliable and maintainable code that matches documented expectations.
 
 ## Document Usage Guidelines
@@ -27,6 +31,11 @@ Coding agents using this repository should:
 - Consult guides in the `docs/` directory for project-specific instructions and best practices.
 - Use `docs/plan.md` to track upcoming tasks and progress. Read it before starting work and update it after completing a task.
 - Follow `docs/AGENTS.md` for rules when editing the task list or current goal.
+
+### .agent-workbench/
+- Use the repository-root hidden directory `.agent-workbench/` for reusable agent-side tooling.
+- Follow `.agent-workbench/AGENTS.md` before adding scripts, scratch output, or local verification helpers there.
+- Keep application runtime behavior independent from `.agent-workbench/`; it is an agent collaboration workspace, not a product dependency.
 
 ## Development Guidelines
 - Keep functions small and focused.
