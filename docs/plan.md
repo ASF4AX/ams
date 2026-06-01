@@ -4,7 +4,7 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 ## Current Goal
 
-에이전트 협업용 workbench와 읽기 전용 API 검증 자동화 기반 마련.
+에이전트 협업용 workbench 기반으로 운영 API 포트폴리오 점검 결과를 안정적으로 수집·기록.
 
 ## Task List
 
@@ -28,3 +28,4 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] API 테스트 안정화 검토: override 정리 범위 축소, lifespan async 테스트 전환, UTC 기준 날짜 계산, 누락 commit 보강 (`tests/api/test_main.py`)
 - [x] 에이전트 workbench 가이드 추가: `.agent-workbench/` 용도, target config 예시, API smoke check helper 작성
 - [x] API 테스트 후속 검증: lifespan 스키마 초기화 미수행 검증 보강 및 기간 수익률/시계열 commit 존재 확인 (`tests/api/test_main.py`)
+- [x] 포트폴리오 현황 업데이트: 2026-06-01 기준 운영 API 자산/수익률/MDD 수집 및 JOB-008 응답 기록, API helper compact 출력 보강 (`.agent-workbench/queries/api_smoke_check.py`)

@@ -83,6 +83,16 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print machine-readable JSON instead of a text summary.",
     )
+    parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="With --json, print compact endpoint summaries instead of full payloads.",
+    )
+    parser.add_argument(
+        "--mdd-without-days",
+        action="store_true",
+        help="Call /v1/risk/mdd without a days query parameter.",
+    )
     return parser.parse_args()
 
 
@@ -158,6 +168,59 @@ def has_any_data(results: list[dict[str, Any]]) -> bool:
     return False
 
 
+def compact_payload(name: str, payload: Any) -> Any:
+    """Keep reusable API checks readable when large list payloads are returned."""
+    if name == "current_assets" and isinstance(payload, list):
+        by_platform: dict[str, float] = {}
+        by_category: dict[str, float] = {}
+        for asset in payload:
+            platform = asset.get("platform") or "미분류"
+            category = asset.get("category") or "미분류"
+            amount = float(asset.get("eval_amount_krw") or 0)
+            by_platform[platform] = by_platform.get(platform, 0) + amount
+            by_category[category] = by_category.get(category, 0) + amount
+        return {
+            "count": len(payload),
+            "by_platform": by_platform,
+            "by_category": by_category,
+        }
+
+    if name == "platform_timeseries" and isinstance(payload, list):
+        by_date: dict[str, dict[str, float]] = {}
+        for row in payload:
+            raw_date = row.get("date") or row.get("snapshot_date") or row.get("created_at")
+            date = raw_date[:10] if isinstance(raw_date, str) else str(raw_date)
+            platform = row.get("platform") or "미분류"
+            value = (
+                row.get("total_krw")
+                or row.get("amount_krw")
+                or row.get("value_krw")
+                or 0
+            )
+            by_date.setdefault(date, {})[platform] = float(value)
+        return {"count": len(payload), "by_date": by_date}
+
+    if isinstance(payload, list):
+        return {"count": len(payload), "items": payload}
+
+    return payload
+
+
+def compact_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    compacted = []
+    for result in results:
+        compacted.append(
+            {
+                "name": result["name"],
+                "url": result["url"],
+                "ok": result["ok"],
+                "count": result["count"],
+                "payload": compact_payload(result["name"], result["payload"]),
+            }
+        )
+    return compacted
+
+
 def main() -> int:
     args = parse_args()
     if args.in_process:
@@ -169,6 +232,8 @@ def main() -> int:
     results = []
     failures = []
     for name, path, raw_params in DEFAULT_ENDPOINTS:
+        if name == "mdd" and args.mdd_without_days:
+            raw_params = {}
         params = {
             key: value.format(**substitutions) for key, value in raw_params.items()
         }
@@ -204,7 +269,7 @@ def main() -> int:
         "ok": not failures,
         "target": source,
         "base_url": base_url,
-        "results": results,
+        "results": compact_results(results) if args.compact else results,
         "failures": failures,
     }
 
