@@ -4,7 +4,7 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 ## Current Goal
 
-에이전트 협업용 workbench 기반으로 운영 API 포트폴리오 점검 결과를 안정적으로 수집·기록.
+운영 자산 동기화와 API 점검 흐름의 안정성을 높인다.
 
 ## Task List
 
@@ -30,3 +30,4 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] API 테스트 후속 검증: lifespan 스키마 초기화 미수행 검증 보강 및 기간 수익률/시계열 commit 존재 확인 (`tests/api/test_main.py`)
 - [x] 포트폴리오 현황 업데이트: 2026-06-01 기준 운영 API 자산/수익률/MDD 수집 및 JOB-008 응답 기록, API helper compact 출력 보강 (`.agent-workbench/queries/api_smoke_check.py`)
 - [x] MDD 결측 구간 백필/정리: 운영 read-only DB 기준 KIS 부분 실패 원인 확정, 문제 3일 metrics 삭제 후 API MDD 정상화(-14.23%) 확인 (`.agent-bridge/JOB-009_MDD_결측구간_백필방안_검토.md`, `.agent-workbench/queries/mdd_missing_db_analysis.py`)
+- [x] KIS API 지수 백오프 재시도 적용: 국내/해외 잔고 fetch의 5xx/연결/타임아웃 오류 재시도 및 회귀 테스트 추가 (`dags/tasks/kis.py`, `tests/dags/tasks/test_kis.py`)

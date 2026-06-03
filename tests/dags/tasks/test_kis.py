@@ -2,13 +2,128 @@ from __future__ import annotations
 
 import math
 
+import pytest
+import requests
+
+from dags.tasks import kis
 from dags.tasks.kis import (
     calculate_eval_amount_krw,
+    fetch_kis_balance_api,
+    fetch_kis_overseas_account_details_api,
     process_kis_assets,
     process_kis_exchange_rates,
     process_kis_overseas_assets,
     process_kis_overseas_cash,
 )
+
+
+class _FakeResponse:
+    def __init__(self, status_code: int, json_data: dict | None = None) -> None:
+        self.status_code = status_code
+        self._json_data = json_data or {}
+
+    def json(self) -> dict:
+        return self._json_data
+
+    def raise_for_status(self) -> None:
+        if self.status_code < 400:
+            return
+        exc = requests.exceptions.HTTPError(f"HTTP {self.status_code}")
+        exc.response = self
+        raise exc
+
+
+def _kis_config() -> dict[str, str]:
+    return {
+        "base_url": "https://kis.example.test",
+        "appkey": "app-key",
+        "appsecret": "app-secret",
+        "account": "12345678",
+        "account_suffix": "01",
+    }
+
+
+def test_fetch_kis_balance_api_retries_5xx_then_returns_success(monkeypatch) -> None:
+    responses = [
+        _FakeResponse(500),
+        _FakeResponse(502),
+        _FakeResponse(200, {"rt_cd": "0", "output1": [], "output2": {}}),
+    ]
+    sleeps: list[float] = []
+
+    def fake_get(*_args, **_kwargs):
+        return responses.pop(0)
+
+    monkeypatch.setattr(kis.requests, "get", fake_get)
+    monkeypatch.setattr(kis.random, "uniform", lambda *_args: 0)
+    monkeypatch.setattr(kis.time, "sleep", sleeps.append)
+
+    result = fetch_kis_balance_api(_kis_config(), "token")
+
+    assert result == {"rt_cd": "0", "output1": [], "output2": {}}
+    assert sleeps == [2, 4]
+    assert responses == []
+
+
+def test_fetch_kis_balance_api_does_not_retry_4xx(monkeypatch) -> None:
+    calls = 0
+
+    def fake_get(*_args, **_kwargs):
+        nonlocal calls
+        calls += 1
+        return _FakeResponse(400)
+
+    monkeypatch.setattr(kis.requests, "get", fake_get)
+    monkeypatch.setattr(kis.time, "sleep", lambda *_args: None)
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        fetch_kis_balance_api(_kis_config(), "token")
+
+    assert calls == 1
+
+
+def test_fetch_kis_overseas_account_details_api_retries_connection_error(
+    monkeypatch,
+) -> None:
+    responses = [
+        requests.exceptions.ConnectionError("connection reset"),
+        _FakeResponse(200, {"rt_cd": "0", "output1": [], "output2": []}),
+    ]
+    sleeps: list[float] = []
+
+    def fake_get(*_args, **_kwargs):
+        response = responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+    monkeypatch.setattr(kis.requests, "get", fake_get)
+    monkeypatch.setattr(kis.random, "uniform", lambda *_args: 0)
+    monkeypatch.setattr(kis.time, "sleep", sleeps.append)
+
+    result = fetch_kis_overseas_account_details_api(_kis_config(), "token")
+
+    assert result == {"rt_cd": "0", "output1": [], "output2": []}
+    assert sleeps == [2]
+    assert responses == []
+
+
+def test_fetch_kis_overseas_account_details_api_raises_after_timeout_retries(
+    monkeypatch,
+) -> None:
+    sleeps: list[float] = []
+
+    def fake_get(*_args, **_kwargs):
+        raise requests.exceptions.Timeout("read timed out")
+
+    monkeypatch.setattr(kis.requests, "get", fake_get)
+    monkeypatch.setattr(kis.random, "uniform", lambda *_args: 0)
+    monkeypatch.setattr(kis.time, "sleep", sleeps.append)
+
+    with pytest.raises(requests.exceptions.Timeout):
+        fetch_kis_overseas_account_details_api(_kis_config(), "token")
+
+    assert sleeps == [2, 4, 8]
 
 
 def test_process_kis_assets_converts_numeric_fields_and_appends_deposit() -> None:
