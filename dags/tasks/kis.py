@@ -1,5 +1,6 @@
 import requests
 import json
+import random
 import time
 import traceback
 from typing import Dict, Any, List
@@ -12,6 +13,60 @@ from utils.db import (
     get_exchange_rates,
     get_latest_revision,
 )
+
+
+KIS_API_MAX_RETRIES = 3
+KIS_API_TIMEOUT = (5, 10)
+KIS_API_JITTER_SECONDS = 0.5
+
+
+def _is_retryable_http_error(exc: requests.exceptions.HTTPError) -> bool:
+    response = getattr(exc, "response", None)
+    status_code = getattr(response, "status_code", None)
+    return status_code is not None and 500 <= status_code < 600
+
+
+def _get_with_retry(
+    url: str,
+    *,
+    headers: Dict[str, str],
+    params: Dict[str, str],
+    request_name: str,
+) -> requests.Response:
+    """Call KIS GET endpoints with short exponential backoff for transient errors."""
+    max_attempts = KIS_API_MAX_RETRIES + 1
+    for attempt in range(1, max_attempts + 1):
+        try:
+            res = requests.get(
+                url,
+                headers=headers,
+                params=params,
+                timeout=KIS_API_TIMEOUT,
+            )
+            res.raise_for_status()
+            return res
+        except requests.exceptions.HTTPError as exc:
+            if not _is_retryable_http_error(exc) or attempt == max_attempts:
+                raise
+            wait_seconds = (2**attempt) + random.uniform(0, KIS_API_JITTER_SECONDS)
+            status_code = getattr(getattr(exc, "response", None), "status_code", "N/A")
+            print(
+                f"[WARNING] {request_name} HTTP {status_code} 오류. "
+                f"{wait_seconds:.2f}초 후 재시도 ({attempt}/{KIS_API_MAX_RETRIES})"
+            )
+            time.sleep(wait_seconds)
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+        ) as exc:
+            if attempt == max_attempts:
+                raise
+            wait_seconds = (2**attempt) + random.uniform(0, KIS_API_JITTER_SECONDS)
+            print(
+                f"[WARNING] {request_name} 일시 오류({exc.__class__.__name__}). "
+                f"{wait_seconds:.2f}초 후 재시도 ({attempt}/{KIS_API_MAX_RETRIES})"
+            )
+            time.sleep(wait_seconds)
 
 
 # --- KIS API 설정 ---
@@ -122,28 +177,26 @@ def fetch_kis_balance_api(config: Dict[str, Any], access_token: str) -> Dict[str
         "CTX_AREA_NK100": "",
     }
     try:
-        # 타임아웃 설정 (연결: 5초, 읽기: 10초)
-        res = requests.get(url, headers=headers, params=params, timeout=(5, 10))
+        res = _get_with_retry(
+            url,
+            headers=headers,
+            params=params,
+            request_name="KIS 잔고 API",
+        )
         res.raise_for_status()
         balance_data = res.json()
         if balance_data.get("rt_cd") != "0":
             raise ValueError(f"잔고 조회 API 오류: {balance_data.get('msg1', '')}")
         print(f"[DEBUG] KIS 잔고 API 조회 성공 (rt_cd: {balance_data.get('rt_cd')})")
         return balance_data
-    except requests.exceptions.Timeout:
-        print("[ERROR] KIS 잔고 API 요청 시간 초과")
-        return {}
-    except requests.exceptions.ConnectionError:
-        print("[ERROR] KIS 잔고 API 연결 실패")
-        return {}
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] KIS 잔고 API 요청 실패: {str(e)}")
         print(traceback.format_exc())
-        return {}
+        raise
     except Exception as e:
         print(f"[ERROR] KIS 잔고 API 처리 중 오류: {str(e)}")
         print(traceback.format_exc())
-        return {}
+        raise
 
 
 def process_kis_assets(
@@ -272,8 +325,12 @@ def fetch_kis_overseas_account_details_api(
             "INQR_DVSN_CD": "00",  # 조회구분코드 (00: 전체)
         }
 
-        # 타임아웃 설정 (연결: 5초, 읽기: 10초)
-        res = requests.get(url, headers=headers, params=params, timeout=(5, 10))
+        res = _get_with_retry(
+            url,
+            headers=headers,
+            params=params,
+            request_name="해외 계좌 상세 API",
+        )
         print(f"[DEBUG] 해외 계좌 상세 API 응답 상태 코드: {res.status_code}")
         res.raise_for_status()
         account_data = res.json()
@@ -288,20 +345,14 @@ def fetch_kis_overseas_account_details_api(
         )
         return account_data
 
-    except requests.exceptions.Timeout:
-        print("[ERROR] 해외 계좌 상세 API 요청 시간 초과")
-        return {}
-    except requests.exceptions.ConnectionError:
-        print("[ERROR] 해외 계좌 상세 API 연결 실패")
-        return {}
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] 해외 계좌 상세 API 요청 실패: {str(e)}")
         print(traceback.format_exc())
-        return {}
+        raise
     except Exception as e:
         print(f"[ERROR] 해외 계좌 상세 API 처리 중 오류: {str(e)}")
         print(traceback.format_exc())
-        return {}
+        raise
 
 
 # --- KIS 해외 주식 처리 (수정: 필드명 변경) ---
