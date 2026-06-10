@@ -93,6 +93,16 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Call /v1/risk/mdd without a days query parameter.",
     )
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        help="Limit execution to the named endpoints (for example: current_assets asset_summary).",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Optional JSON output file. Useful when capturing payloads for reuse.",
+    )
     return parser.parse_args()
 
 
@@ -231,7 +241,10 @@ def main() -> int:
 
     results = []
     failures = []
+    selected = set(args.only or [])
     for name, path, raw_params in DEFAULT_ENDPOINTS:
+        if selected and name not in selected:
+            continue
         if name == "mdd" and args.mdd_without_days:
             raw_params = {}
         params = {
@@ -273,8 +286,13 @@ def main() -> int:
         "failures": failures,
     }
 
+    rendered = json.dumps(report, ensure_ascii=False, indent=2, default=str)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(rendered + "\n", encoding="utf-8")
+
     if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
+        print(rendered)
     else:
         print(f"AMS API smoke check target: {source} ({base_url})")
         for result in results:

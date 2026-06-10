@@ -4,7 +4,7 @@ This document tracks tasks, progress, and next steps for the project. After each
 
 ## Current Goal
 
-운영 자산 동기화와 API 점검 흐름의 안정성을 높인다.
+운영 자산 동기화와 포트폴리오 스냅샷 전달 흐름의 안정성을 높인다.
 
 ## Task List
 
@@ -32,3 +32,4 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] MDD 결측 구간 백필/정리: 운영 read-only DB 기준 KIS 부분 실패 원인 확정, 문제 3일 metrics 삭제 후 API MDD 정상화(-14.23%) 확인 (`.agent-bridge/JOB-009_MDD_결측구간_백필방안_검토.md`, `.agent-workbench/queries/mdd_missing_db_analysis.py`)
 - [x] KIS API 지수 백오프 재시도 적용: 국내/해외 잔고 fetch의 5xx/연결/타임아웃 오류 재시도 및 회귀 테스트 추가 (`dags/tasks/kis.py`, `tests/dags/tasks/test_kis.py`)
 - [x] 자산 현황 최신 조회: 2026-06-03 기준 운영 API 자산/수익률/MDD 수집 및 TSK-019 업데이트 (`work/tasks/TSK-019_포트폴리오점검및MDD모니터링.md`)
+- [x] 포트폴리오 캐시 JSON 생성 자동화: 운영 API 스냅샷을 외부 `.agent-bridge/portfolio_cache.json`으로 덮어쓰는 helper와 변환 테스트 추가 (`app/utils/portfolio_cache.py`, `.agent-workbench/queries/refresh_portfolio_cache.py`, `tests/app/utils/test_portfolio_cache.py`)
