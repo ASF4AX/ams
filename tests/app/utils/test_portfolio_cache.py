@@ -16,7 +16,9 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
                 "platform": "한국투자증권",
                 "category": "미국주식",
                 "quantity": 2,
+                "evaluation_amount": 7,
                 "eval_amount_krw": 7000.3,
+                "avg_price": 2.5,
             },
             {
                 "symbol": "USD",
@@ -24,6 +26,7 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
                 "platform": "한국투자증권",
                 "category": "현금",
                 "quantity": 10.5,
+                "evaluation_amount": 10.5,
                 "eval_amount_krw": 3000.2,
             },
             {
@@ -32,6 +35,7 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
                 "platform": "테스트",
                 "category": "암호화폐",
                 "quantity": 1,
+                "evaluation_amount": 0,
                 "eval_amount_krw": 0,
             },
         ],
@@ -45,6 +49,9 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
         "as_of_date": "2026-06-10",
         "total_assets_krw": 12346,
         "item_count": 2,
+        "total_cost_krw": 5000,
+        "total_unrealized_pnl_krw": 2000,
+        "total_return_pct": 40.0,
     }
     assert cache["returns"] == {"d7_pct": -1.23, "d30_pct": 5.68}
     assert cache["mdd"] == {
@@ -63,6 +70,10 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
             "shares": 2.0,
             "value_krw": 7000,
             "weight_pct": 56.7,
+            "cost_basis_krw": 5000,
+            "avg_price": 2.5,
+            "unrealized_pnl_krw": 2000,
+            "return_pct": 40.0,
         },
         {
             "ticker": "USD",
@@ -72,6 +83,10 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
             "shares": 10.5,
             "value_krw": 3000,
             "weight_pct": 24.3,
+            "cost_basis_krw": None,
+            "avg_price": None,
+            "unrealized_pnl_krw": None,
+            "return_pct": None,
         },
     ]
 
@@ -96,5 +111,9 @@ def test_build_portfolio_cache_keeps_null_pct_when_total_is_zero():
     )
 
     assert cache["positions"][0]["weight_pct"] is None
+    assert cache["positions"][0]["cost_basis_krw"] is None
     assert cache["returns"] == {"d7_pct": None, "d30_pct": None}
     assert cache["mdd"]["measured_30d_pct"] is None
+    assert cache["summary"]["total_cost_krw"] is None
+    assert cache["summary"]["total_unrealized_pnl_krw"] is None
+    assert cache["summary"]["total_return_pct"] is None

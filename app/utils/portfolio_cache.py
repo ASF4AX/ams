@@ -23,6 +23,16 @@ def _iso_now() -> str:
     return datetime.now(SEOUL_TZ).isoformat(timespec="seconds")
 
 
+def _cost_basis_krw(asset: dict[str, Any], value_krw: int) -> int | None:
+    avg_price = asset.get("avg_price")
+    quantity = asset.get("quantity")
+    evaluation_amount = asset.get("evaluation_amount")
+    if avg_price is None or not quantity or not evaluation_amount:
+        return None
+    fx_rate = float(asset.get("eval_amount_krw") or 0) / float(evaluation_amount)
+    return _krw_int(float(avg_price) * float(quantity) * fx_rate)
+
+
 def build_portfolio_cache(
     *,
     summary: dict[str, Any],
@@ -35,6 +45,8 @@ def build_portfolio_cache(
 ) -> dict[str, Any]:
     positions = []
     total_assets_krw = _krw_int(summary.get("total_krw"))
+    total_cost_krw = 0
+    total_unrealized_pnl_krw = 0
 
     for asset in sorted(
         current_assets,
@@ -44,6 +56,15 @@ def build_portfolio_cache(
         value_krw = _krw_int(asset.get("eval_amount_krw"))
         if value_krw <= 0:
             continue
+        cost_basis_krw = _cost_basis_krw(asset, value_krw)
+        unrealized_pnl_krw = None
+        return_pct = None
+        if cost_basis_krw is not None:
+            unrealized_pnl_krw = value_krw - cost_basis_krw
+            if cost_basis_krw > 0:
+                return_pct = round((unrealized_pnl_krw / cost_basis_krw) * 100, 2)
+            total_cost_krw += cost_basis_krw
+            total_unrealized_pnl_krw += unrealized_pnl_krw
         weight_pct = None
         if total_assets_krw > 0:
             weight_pct = round((value_krw / total_assets_krw) * 100, 2)
@@ -56,8 +77,16 @@ def build_portfolio_cache(
                 "shares": float(asset.get("quantity") or 0),
                 "value_krw": value_krw,
                 "weight_pct": weight_pct,
+                "cost_basis_krw": cost_basis_krw,
+                "avg_price": asset.get("avg_price"),
+                "unrealized_pnl_krw": unrealized_pnl_krw,
+                "return_pct": return_pct,
             }
         )
+
+    total_return_pct = None
+    if total_cost_krw > 0:
+        total_return_pct = round((total_unrealized_pnl_krw / total_cost_krw) * 100, 2)
 
     return {
         "as_of": as_of or _iso_now(),
@@ -67,6 +96,11 @@ def build_portfolio_cache(
             "as_of_date": summary.get("as_of"),
             "total_assets_krw": total_assets_krw,
             "item_count": len(positions),
+            "total_cost_krw": total_cost_krw or None,
+            "total_unrealized_pnl_krw": total_unrealized_pnl_krw
+            if total_cost_krw > 0
+            else None,
+            "total_return_pct": total_return_pct,
         },
         "returns": {
             "d7_pct": _pct(return_7d.get("return_rate_pct")),
