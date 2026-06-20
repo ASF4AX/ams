@@ -129,6 +129,7 @@ env.bak/
 venv.bak/
 
 # Agent workbench
+.agent-bridge
 .agent-workbench/*
 !.agent-workbench/AGENTS.md
 !.agent-workbench/README.md
