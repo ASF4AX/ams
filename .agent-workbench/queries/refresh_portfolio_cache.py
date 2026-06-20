@@ -124,7 +124,7 @@ def _format_example_block(cache: dict[str, Any]) -> str:
        "total_cost_krw": {json.dumps(summary['total_cost_krw'], ensure_ascii=False)}, "total_unrealized_pnl_krw": {json.dumps(summary['total_unrealized_pnl_krw'], ensure_ascii=False)}, "total_return_pct": {json.dumps(summary['total_return_pct'], ensure_ascii=False)}
      }},
      "returns": {{ "d7_pct": {json.dumps(returns['d7_pct'], ensure_ascii=False)}, "d30_pct": {json.dumps(returns['d30_pct'], ensure_ascii=False)} }},
-     "mdd": {{ "measured_30d_pct": {json.dumps(mdd['measured_30d_pct'], ensure_ascii=False)}, "api_raw_pct": null, "note": "{mdd['note']}" }},
+     "mdd": {{ "measured_30d_pct": {json.dumps(mdd['measured_30d_pct'], ensure_ascii=False)} }},
      "by_platform":    [ {{ "platform": "{by_platform['platform']}", "value_krw": {by_platform['value_krw']} }} ],
      "by_asset_class": [ {{ "class": "{by_asset_class['class']}", "value_krw": {by_asset_class['value_krw']} }} ],
      "positions": [

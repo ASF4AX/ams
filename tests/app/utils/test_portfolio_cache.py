@@ -1,4 +1,4 @@
-from app.utils.portfolio_cache import MDD_NOTE, build_portfolio_cache
+from app.utils.portfolio_cache import build_portfolio_cache
 
 
 def test_build_portfolio_cache_shapes_and_rounds_values():
@@ -56,8 +56,6 @@ def test_build_portfolio_cache_shapes_and_rounds_values():
     assert cache["returns"] == {"d7_pct": -1.23, "d30_pct": 5.68}
     assert cache["mdd"] == {
         "measured_30d_pct": -3.46,
-        "api_raw_pct": None,
-        "note": MDD_NOTE,
     }
     assert cache["by_platform"] == [{"platform": "한국투자증권", "value_krw": 10000}]
     assert cache["by_asset_class"] == [{"class": "미국주식", "value_krw": 10000}]

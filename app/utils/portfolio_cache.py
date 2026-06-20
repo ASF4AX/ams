@@ -6,7 +6,6 @@ from zoneinfo import ZoneInfo
 
 
 SEOUL_TZ = ZoneInfo("Asia/Seoul")
-MDD_NOTE = "API 원시 MDD는 결측 보정 이력으로 장기 판단 불가"
 
 
 def _krw_int(value: Any) -> int:
@@ -41,7 +40,7 @@ def build_portfolio_cache(
     return_30d: dict[str, Any],
     mdd_30d: dict[str, Any],
     as_of: str | None = None,
-    source: str = "AMS API @ http://replace-me:8003",
+    source: str = "AMS API",
 ) -> dict[str, Any]:
     positions = []
     total_assets_krw = _krw_int(summary.get("total_krw"))
@@ -108,8 +107,6 @@ def build_portfolio_cache(
         },
         "mdd": {
             "measured_30d_pct": _pct(mdd_30d.get("maximum_drawdown_pct")),
-            "api_raw_pct": None,
-            "note": MDD_NOTE,
         },
         "by_platform": [
             {

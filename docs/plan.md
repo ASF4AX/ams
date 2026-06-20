@@ -34,3 +34,5 @@ This document tracks tasks, progress, and next steps for the project. After each
 - [x] 자산 현황 최신 조회: 2026-06-03 기준 운영 API 자산/수익률/MDD 수집 및 TSK-019 업데이트 (`work/tasks/TSK-019_포트폴리오점검및MDD모니터링.md`)
 - [x] 포트폴리오 캐시 JSON 생성 자동화: 운영 API 스냅샷을 외부 `.agent-bridge/portfolio_cache.json`으로 덮어쓰는 helper와 변환 테스트 추가 (`app/utils/portfolio_cache.py`, `.agent-workbench/queries/refresh_portfolio_cache.py`, `tests/app/utils/test_portfolio_cache.py`)
 - [x] 포트폴리오 캐시 손익 확장: 종목별 원가·평가손익·수익률 및 summary 손익 집계를 캐시에 포함하도록 변환 규칙과 테스트 갱신 (`app/utils/portfolio_cache.py`, `tests/app/utils/test_portfolio_cache.py`)
+- [x] AgentHub 포트폴리오 캐시 스크립트 추가: AMS 읽기 API를 조회해 최신 MDD 스키마를 포함한 캐시를 Windmill 실행 결과로 제공
+- [x] AMS 라이브 조회 사용 가이드 문서화: 최신값·정적 캐시의 사용 구분과 공개 정보 경계를 기록 (`docs/agenthub_ams_portfolio_mcp.md`)
